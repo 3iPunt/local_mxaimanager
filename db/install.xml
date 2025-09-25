@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/mxaimanager/db" VERSION="20231130" COMMENT="XMLDB file for Moodle local/mxaimanager"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+    <TABLES>
+        <TABLE NAME="local_mxaimanager_providers" COMMENT="Table for storing AI provider information">
+            <FIELDS>
+                <FIELD NAME="id" SEQUENCE="true" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID of the record"/>
+                <FIELD NAME="name" SEQUENCE="false" TYPE="char" LENGTH="255" NOTNULL="true"
+                       COMMENT="Name of the AI provider"/>
+                <FIELD NAME="classname" SEQUENCE="false" TYPE="char" LENGTH="255" NOTNULL="true"
+                       COMMENT="Class name for the provider implementation"/>
+                <FIELD NAME="config_json" SEQUENCE="false" TYPE="text" NOTNULL="false"
+                       COMMENT="JSON configuration for the provider"/>
+                <FIELD NAME="timecreated" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
+                       COMMENT="Timestamp when the provider was created"/>
+                <FIELD NAME="timemodified" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
+                       COMMENT="Timestamp when the provider was last updated"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="name" UNIQUE="true" FIELDS="name"/>
+            </INDEXES>
+        </TABLE>
+        <TABLE NAME="local_mxaimanager_actions" COMMENT="Table for storing AI action information">
+            <FIELDS>
+                <FIELD NAME="id" SEQUENCE="true" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID of the record"/>
+                <FIELD NAME="name" SEQUENCE="false" TYPE="char" LENGTH="255" NOTNULL="true"
+                       COMMENT="Name of the AI action"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="name" UNIQUE="true" FIELDS="name"/>
+            </INDEXES>
+        </TABLE>
+        <TABLE NAME="local_mxaimanager_provider_actions"
+               COMMENT="Table for storing supported actions and settings per provider">
+            <FIELDS>
+                <FIELD NAME="id" SEQUENCE="true" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID of the record"/>
+                <FIELD NAME="action_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
+                       COMMENT="ID of the action"/>
+                <FIELD NAME="provider_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
+                       COMMENT="ID of the provider"/>
+                <FIELD NAME="settings_json" SEQUENCE="false" TYPE="text" NOTNULL="false"
+                       COMMENT="JSON settings for the action-provider combination"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="action_id_provider_id" UNIQUE="true" FIELDS="action_id,provider_id"/>
+                <INDEX NAME="action_id" UNIQUE="false" FIELDS="action_id"/>
+                <INDEX NAME="provider_id" UNIQUE="false" FIELDS="provider_id"/>
+            </INDEXES>
+        </TABLE>
+        <TABLE NAME="local_mxaimanager_action_default_providers"
+               COMMENT="Table for storing default providers for each action">
+            <FIELDS>
+                <FIELD NAME="id" SEQUENCE="true" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID of the record"/>
+                <FIELD NAME="action_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
+                       COMMENT="ID of the action"/>
+                <FIELD NAME="provider_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
+                       COMMENT="ID of the provider"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="action_id_provider_id" UNIQUE="false" FIELDS="action_id,provider_id"/>
+                <INDEX NAME="action_id" UNIQUE="true" FIELDS="action_id"/>
+                <INDEX NAME="provider_id" UNIQUE="false" FIELDS="provider_id"/>
+            </INDEXES>
+        </TABLE>
+        <TABLE NAME="local_mxaimanager_features" COMMENT="Table for storing AI features">
+            <FIELDS>
+                <FIELD NAME="id" SEQUENCE="true" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID of the record"/>
+                <FIELD NAME="component" SEQUENCE="false" TYPE="char" LENGTH="50" NOTNULL="true"
+                       COMMENT="Component name of the plugin implementing this feature"/>
+                <FIELD NAME="name_identifier" SEQUENCE="false" TYPE="char" LENGTH="255" NOTNULL="true"
+                       COMMENT="Language string identifier for the feature name"/>
+                <FIELD NAME="description_identifier" SEQUENCE="false" TYPE="char" LENGTH="255" NOTNULL="true"
+                       COMMENT="Language string identifier for the feature description"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="component_name_identifier" UNIQUE="true" FIELDS="component,name_identifier"/>
+                <INDEX NAME="component" UNIQUE="false" FIELDS="component"/>
+                <INDEX NAME="name_identifier" UNIQUE="false" FIELDS="name_identifier"/>
+            </INDEXES>
+        </TABLE>
+        <TABLE NAME="local_mxaimanager_feature_actions"
+               COMMENT="Table for storing the actions for each feature, along with optional feature-specific provider and settings overrides">
+            <FIELDS>
+                <FIELD NAME="id" SEQUENCE="true" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID of the record"/>
+                <FIELD NAME="feature_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
+                       COMMENT="ID of the feature"/>
+                <FIELD NAME="action_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
+                       COMMENT="ID of the action"/>
+                <FIELD NAME="provider_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="false"
+                       COMMENT="ID of the provider (optional override)"/>
+                <FIELD NAME="settings_json" SEQUENCE="false" TYPE="text" NOTNULL="false"
+                       COMMENT="JSON settings for the feature-action combination (optional override)"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="feature_action" UNIQUE="true" FIELDS="feature_id,action_id"/>
+                <INDEX NAME="feature_id" UNIQUE="false" FIELDS="feature_id"/>
+                <INDEX NAME="action_id" UNIQUE="false" FIELDS="action_id"/>
+                <INDEX NAME="provider_id" UNIQUE="false" FIELDS="provider_id"/>
+            </INDEXES>
+        </TABLE>
+    </TABLES>
+</XMLDB>

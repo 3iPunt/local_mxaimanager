@@ -1,0 +1,95 @@
+name: Integration & Unit test
+
+on:
+  pull_request:
+    branches:
+      - MOODLE_*_STABLE
+
+jobs:
+  PHPUnit:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      matrix:
+        include:
+          # Moodle 4.4
+          ## MySQL
+          - php: 8.1
+            os: ubuntu-latest
+            moodle: MOODLE_404_STABLE
+            experimental: false
+            dbtype: mysqli
+          - php: 8.2
+            os: ubuntu-latest
+            moodle: MOODLE_404_STABLE
+            dbtype: mysqli
+            experimental: false
+          - php: 8.3
+            os: ubuntu-latest
+            moodle: MOODLE_404_STABLE
+            dbtype: mysqli
+            experimental: false
+          ## MSSQL
+          - php: 8.1
+            os: ubuntu-latest
+            moodle: MOODLE_404_STABLE
+            experimental: false
+            dbtype: sqlsrv
+          - php: 8.2
+            os: ubuntu-latest
+            moodle: MOODLE_404_STABLE
+            dbtype: sqlsrv
+            experimental: false
+          - php: 8.3
+            os: ubuntu-latest
+            moodle: MOODLE_404_STABLE
+            dbtype: sqlsrv
+            experimental: false
+
+          # Moodle 5.0
+          ## MySQL
+          - php: 8.2
+            os: ubuntu-latest
+            moodle: MOODLE_500_STABLE
+            dbtype: mysqli
+            experimental: true
+          - php: 8.3
+            os: ubuntu-latest
+            moodle: MOODLE_500_STABLE
+            dbtype: mysqli
+            experimental: true
+          - php: 8.4
+            os: ubuntu-latest
+            moodle: MOODLE_500_STABLE
+            dbtype: mysqli
+            experimental: true
+          ## MSSQL
+          - php: 8.2
+            os: ubuntu-latest
+            moodle: MOODLE_500_STABLE
+            dbtype: sqlsrv
+            experimental: true
+          - php: 8.3
+            os: ubuntu-latest
+            moodle: MOODLE_500_STABLE
+            dbtype: sqlsrv
+            experimental: true
+          - php: 8.4
+            os: ubuntu-latest
+            moodle: MOODLE_500_STABLE
+            dbtype: sqlsrv
+            experimental: true
+
+    steps:
+      - name: Unit testing & integration testing
+        uses: praxisdigital/moodle-test-action@master
+        with:
+          plugin: local_mxaimanager
+          plugin-path: local/mxaimanager
+          os: ${{ matrix.os }}
+          php: ${{ matrix.php }}
+          dbtype: ${{ matrix.dbtype }}
+          moodle: ${{ matrix.moodle }}
+          experimental: ${{ matrix.experimental }}
+          dependencies: ${{ matrix.dependencies }}
+          PRIVATE_REPO_TOKEN: ${{ secrets.MOODLE_GH_KEY }}

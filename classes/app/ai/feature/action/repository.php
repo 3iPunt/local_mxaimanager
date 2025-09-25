@@ -1,0 +1,100 @@
+<?php
+
+namespace local_mxaimanager\app\ai\feature\action;
+
+
+// @codeCoverageIgnoreStart
+defined('MOODLE_INTERNAL') || die();
+// @codeCoverageIgnoreEnd
+
+/**
+ * @extends \local_mxaimanager\app\repository<entity>
+ */
+class repository extends \local_mxaimanager\app\repository
+{
+    public function get_table(): string
+    {
+        return 'local_mxaimanager_feature_actions';
+    }
+
+    public function get_by_id(int $id): entity
+    {
+        return $this->base_factory->ai()->feature()->action()->entity(
+            (array)$this->db->get_record($this->get_table(), ['id' => $id], strictness: MUST_EXIST)
+        );
+    }
+
+    /**
+     * @param int $feature_id
+     * @return \local_mxaimanager\app\collection<entity>
+     * @throws \dml_exception
+     */
+    public function get_all_by_feature_id(int $feature_id): \local_mxaimanager\app\collection
+    {
+        return $this->base_factory->collection(
+            array_map(
+                function (object $record) {
+                    return $this->base_factory->ai()->feature()->action()->entity((array)$record);
+                },
+                $this->db->get_records($this->get_table(), ['feature_id' => $feature_id])
+            )
+        );
+    }
+
+    /**
+     * @param int $action_id
+     * @return \local_mxaimanager\app\collection<entity>
+     * @throws \dml_exception
+     */
+    public function get_all_by_action_id(int $action_id): \local_mxaimanager\app\collection
+    {
+        return $this->base_factory->collection(
+            array_map(
+                function (object $record) {
+                    return $this->base_factory->ai()->feature()->action()->entity((array)$record);
+                },
+                $this->db->get_records($this->get_table(), ['action_id' => $action_id])
+            )
+        );
+    }
+
+    /**
+     * @param ?int $provider_id
+     * @return \local_mxaimanager\app\collection<entity>
+     * @throws \dml_exception
+     */
+    public function get_all_by_provider_id(?int $provider_id): \local_mxaimanager\app\collection
+    {
+        return $this->base_factory->collection(
+            array_map(
+                function (object $record) {
+                    return $this->base_factory->ai()->feature()->action()->entity((array)$record);
+                },
+                $this->db->get_records($this->get_table(), ['provider_id' => $provider_id])
+            )
+        );
+    }
+
+    public function get_by_feature_id_and_action_id(int $feature_id, int $action_id): entity
+    {
+        return $this->base_factory->ai()->feature()->action()->entity(
+            (array)$this->db->get_record(
+                $this->get_table(),
+                ['feature_id' => $feature_id, 'action_id' => $action_id],
+                strictness: MUST_EXIST
+            )
+        );
+    }
+
+    public function get_all(): \local_mxaimanager\app\collection
+    {
+        return $this->base_factory->collection(
+            array_map(
+                function (object $record) {
+                    return $this->base_factory->ai()->feature()->action()->entity((array)$record);
+                },
+                $this->db->get_records($this->get_table())
+            )
+        );
+    }
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
+         bootstrap="../../lib/phpunit/bootstrap.php"
+         processIsolation="false"
+         backupGlobals="false"
+         cacheResult="false"
+         stopOnError="false"
+         stopOnFailure="false"
+         stopOnIncomplete="false"
+         stopOnSkipped="false"
+         beStrictAboutTestsThatDoNotTestAnything="false"
+         beStrictAboutOutputDuringTests="true"
+         defaultTestSuite="unit"
+>
+    <source ignoreIndirectDeprecations="true" restrictNotices="true" restrictWarnings="true">
+        <include>
+            <directory>classes</directory>
+        </include>
+    </source>
+
+    <!--All core suites need to be manually added here-->
+    <testsuites>
+        <testsuite name="unit">
+            <directory suffix="_test.php">tests/unit</directory>
+            <directory suffix="_test.php">tests/integration</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
