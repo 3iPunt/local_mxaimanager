@@ -10,19 +10,19 @@ defined('MOODLE_INTERNAL') || die();
 
 use base_testcase;
 use Exception;
-use local_mxaimanager\app\factory as base_factory;
-use local_mxaimanager\app\ai\factory as ai_factory;
 use local_mxaimanager\app\ai\action\factory as ai_action_factory;
-use local_mxaimanager\app\ai\action\default_provider\factory as default_provider_factory;
-use local_mxaimanager\app\ai\provider\factory as provider_factory;
-use local_mxaimanager\app\ai\provider\action\factory as provider_action_factory;
-use local_mxaimanager\app\ai\feature\factory as feature_factory;
+use local_mxaimanager\app\ai\default_provider\entity as default_provider_entity;
+use local_mxaimanager\app\ai\default_provider\factory as default_provider_factory;
+use local_mxaimanager\app\ai\factory as ai_factory;
+use local_mxaimanager\app\ai\feature\action\entity as feature_action_entity;
 use local_mxaimanager\app\ai\feature\action\factory as feature_action_factory;
 use local_mxaimanager\app\ai\feature\entity;
+use local_mxaimanager\app\ai\feature\factory as feature_factory;
 use local_mxaimanager\app\ai\feature\provider_resolver;
-use local_mxaimanager\app\ai\feature\action\entity as feature_action_entity;
-use local_mxaimanager\app\ai\action\default_provider\entity as default_provider_entity;
 use local_mxaimanager\app\ai\provider\action\entity as provider_action_entity;
+use local_mxaimanager\app\ai\provider\action\factory as provider_action_factory;
+use local_mxaimanager\app\ai\provider\factory as provider_factory;
+use local_mxaimanager\app\factory as base_factory;
 
 class provider_resolver_test extends base_testcase
 {
@@ -198,7 +198,7 @@ class provider_resolver_test extends base_testcase
         // Mock factory chains
         $feature_action_factory_mock = $this->createMock(feature_action_factory::class);
         $default_provider_repository_mock = $this->createMock(
-            \local_mxaimanager\app\ai\action\default_provider\repository::class
+            \local_mxaimanager\app\ai\default_provider\repository::class
         );
         $default_provider_factory_mock = $this->createMock(default_provider_factory::class);
         $provider_action_repository_mock = $this->createMock(
@@ -289,7 +289,7 @@ class provider_resolver_test extends base_testcase
             ->willThrowException(new \dml_missing_record_exception('feature_action', 'feature_id', [10, 5]));
 
         $default_provider_repository_mock = $this->createMock(
-            \local_mxaimanager\app\ai\action\default_provider\repository::class
+            \local_mxaimanager\app\ai\default_provider\repository::class
         );
         $default_provider_repository_mock->expects($this->once())
             ->method('get_by_action_id')
@@ -378,7 +378,7 @@ class provider_resolver_test extends base_testcase
         // Mock factory chains
         $feature_action_factory_mock = $this->createMock(feature_action_factory::class);
         $default_provider_repository_mock = $this->createMock(
-            \local_mxaimanager\app\ai\action\default_provider\repository::class
+            \local_mxaimanager\app\ai\default_provider\repository::class
         );
         $default_provider_factory_mock = $this->createMock(default_provider_factory::class);
         $provider_action_factory_mock = $this->createMock(provider_action_factory::class);

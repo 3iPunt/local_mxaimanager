@@ -1,0 +1,22 @@
+<h2 class="mb-5">{{#str}}settings:manage_page, local_mxaimanager{{/str}}</h2>
+<div>
+    <ul class="nav nav-tabs" role="tablist" data-tab-content="#tabContent">
+        <li class="nav-item">
+            <a class="nav-link {{$general}}{{#general}}active{{/general}}{{/general}}"
+               href="/local/mxaimanager/view.php?view=manage&action=index">General</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{$providers}}{{#providers}}active{{/providers}}{{/providers}}"
+               href="/local/mxaimanager/view.php?view=manage_providers&action=browse">Providers</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{$features}}{{#features}}active{{/features}}{{/features}}"
+               href="/local/mxaimanager/view.php?view=manage_features&action=browse">Features</a>
+        </li>
+    </ul>
+    <div class="tab-content bg-white px-3 py-5" id="tabContent">
+        {{$content}}
+            {{{content}}}
+        {{/content}}
+    </div>
+</div>

@@ -1,0 +1,23 @@
+<div class="alert alert-info mb-0">
+    <h6 class="font-weight-bold">{{#str}}provider_supports, local_mxaimanager{{/str}}:</h6>
+    <ul class="list-unstyled mb-0">
+        <li>
+            {{#chat}}
+                <i class="fa fa-square-check"></i>
+            {{/chat}}
+            {{^chat}}
+                <i class="fa fa-square-o"></i>
+            {{/chat}}
+            {{#str}}supports_chat, local_mxaimanager{{/str}}
+        </li>
+        <li>
+            {{#embedding}}
+                <i class="fa fa-square-check"></i>
+            {{/embedding}}
+            {{^embedding}}
+                <i class="fa fa-square-o"></i>
+            {{/embedding}}
+            {{#str}}supports_embedding, local_mxaimanager{{/str}}
+        </li>
+    </ul>
+</div>

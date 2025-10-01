@@ -34,15 +34,12 @@ class handler
      */
     public function chat_completion(array $messages): string
     {
-        // Get the chat completion action.
-        $action = $this->base_factory->ai()->action()->repository()->get_by_name(
-            \local_mxaimanager\app\ai\action\manager::ACTION_CHAT_COMPLETION
+        // Get provider_id and settings_json for the action.
+        [$provider_id, $config_json] = $this->provider_resolver->get_provider_and_config(
+            \local_mxaimanager\app\ai\provider\providers\interfaces\chat_completion::class
         );
 
-        // Get provider_id and settings_json for the action.
-        [$provider_id, $settings_json] = $this->provider_resolver->get_provider_and_settings($action->get_id());
-
-        return $this->action_handler->chat_completion($messages, $provider_id, $settings_json);
+        return $this->action_handler->chat_completion($messages, $provider_id, $config_json);
     }
 
     /**
@@ -54,14 +51,11 @@ class handler
      */
     public function create_embedding(string $input, int $dimension): array
     {
-        // Get the create embedding action.
-        $action = $this->base_factory->ai()->action()->repository()->get_by_name(
-            \local_mxaimanager\app\ai\action\manager::ACTION_CREATE_EMBEDDING
+        // Get provider_id and settings_json for the action.
+        [$provider_id, $config_json] = $this->provider_resolver->get_provider_and_config(
+            \local_mxaimanager\app\ai\provider\providers\interfaces\create_embedding::class
         );
 
-        // Get provider_id and settings_json for the action.
-        [$provider_id, $settings_json] = $this->provider_resolver->get_provider_and_settings($action->get_id());
-
-        return $this->action_handler->create_embedding($input, $dimension, $provider_id, $settings_json);
+        return $this->action_handler->create_embedding($input, $dimension, $provider_id, $config_json);
     }
 }

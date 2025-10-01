@@ -10,17 +10,25 @@ defined('MOODLE_INTERNAL') || die();
 
 use local_mxaimanager\app\factory as base_factory;
 
-class openai implements interfaces\chat_completion, interfaces\create_embedding
+class openai extends provider implements interfaces\chat_completion, interfaces\create_embedding
 {
-    private base_factory $base_factory;
     private \curl $curl;
-    private string $base_url = 'https://api.openai.com';
+    private string $base_url;
     private string $api_key;
+    private string $chat_model;
+    private string $embedding_model;
 
     public function __construct(base_factory $base_factory, array $json_config)
     {
         $this->base_factory = $base_factory;
+        $this->base_url = $json_config['base_url'] ?? '';
         $this->api_key = $json_config['api_key'] ?? '';
+        $this->chat_model = $json_config['chat_model'] ?? '';
+        $this->embedding_model = $json_config['embedding_model'] ?? '';
+
+        if (empty($this->base_url) || empty($this->api_key)) {
+            throw new \Exception('OpenAI provider is not configured');
+        }
 
         $this->curl = $this->base_factory->curl();
         $this->curl->setHeader([
@@ -29,10 +37,66 @@ class openai implements interfaces\chat_completion, interfaces\create_embedding
         ]);
     }
 
-    public function chat_completion(array $messages, string $model): string
+    public static function moodleform_definition(\MoodleQuickForm $mform, string $element_name_prefix): void
     {
+        // Add base_url field
+        $mform->addElement('text', "{$element_name_prefix}base_url", get_string('base_url', 'local_mxaimanager'));
+        $mform->setType("{$element_name_prefix}base_url", PARAM_URL);
+        $mform->setDefault("{$element_name_prefix}base_url", 'https://api.openai.com');
+
+        // Add api_key field
+        $mform->addElement('text', "{$element_name_prefix}api_key", get_string('api_key', 'local_mxaimanager'));
+        $mform->setType("{$element_name_prefix}api_key", PARAM_TEXT);
+        $mform->setDefault("{$element_name_prefix}api_key", '');
+
+        // Add chat model field
+        $mform->addElement(
+            'text',
+            "{$element_name_prefix}chat_model",
+            get_string('default_chat_model', 'local_mxaimanager')
+        );
+        $mform->setType("{$element_name_prefix}chat_model", PARAM_TEXT);
+
+        // Add embedding model field
+        $mform->addElement(
+            'text',
+            "{$element_name_prefix}embedding_model",
+            get_string('default_embedding_model', 'local_mxaimanager')
+        );
+        $mform->setType("{$element_name_prefix}embedding_model", PARAM_TEXT);
+    }
+
+    public static function moodleform_validation(array $data, string $element_name_prefix): array
+    {
+        $errors = [];
+
+        if (empty($data["{$element_name_prefix}base_url"])) {
+            $errors["{$element_name_prefix}base_url"] = get_string('required');
+        }
+
+        if (empty($data["{$element_name_prefix}api_key"])) {
+            $errors["{$element_name_prefix}api_key"] = get_string('required');
+        }
+
+        if (empty($data["{$element_name_prefix}chat_model"])) {
+            $errors["{$element_name_prefix}chat_model"] = get_string('required');
+        }
+
+        if (empty($data["{$element_name_prefix}embedding_model"])) {
+            $errors["{$element_name_prefix}embedding_model"] = get_string('required');
+        }
+
+        return $errors;
+    }
+
+    public function chat_completion(array $messages): string
+    {
+        if (empty($this->chat_model)) {
+            throw new \Exception('Chat model is not configured');
+        }
+
         $response = $this->curl->post("{$this->base_url}/v1/chat/completions", json_encode([
-            'model' => $model,
+            'model' => $this->chat_model,
             'messages' => $messages,
         ], JSON_THROW_ON_ERROR));
 
@@ -41,10 +105,14 @@ class openai implements interfaces\chat_completion, interfaces\create_embedding
         return $json['choices'][0]['message']['content'];
     }
 
-    public function get_embedding(string $input, string $model, ?int $dimension): array
+    public function get_embedding(string $input, ?int $dimension): array
     {
+        if (empty($this->embedding_model)) {
+            throw new \Exception('Embedding model is not configured');
+        }
+
         $response = $this->curl->post("{$this->base_url}/v1/embeddings", json_encode([
-            'model' => $model,
+            'model' => $this->embedding_model,
             'input' => $input,
             'dimensions' => $dimension
         ], JSON_THROW_ON_ERROR));

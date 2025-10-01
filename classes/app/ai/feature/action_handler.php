@@ -10,8 +10,9 @@ defined('MOODLE_INTERNAL') || die();
 
 use Exception;
 use JsonException;
-use local_mxaimanager\app\ai\provider\entity as provider_entity;
 use local_mxaimanager\app\ai\provider\message;
+use local_mxaimanager\app\ai\provider\providers\interfaces\chat_completion;
+use local_mxaimanager\app\ai\provider\providers\interfaces\create_embedding;
 use local_mxaimanager\app\factory as base_factory;
 
 class action_handler
@@ -24,35 +25,24 @@ class action_handler
     }
 
     /**
-     * @template T of \local_mxaimanager\app\ai\provider\providers\interfaces\chat_completion|\local_mxaimanager\app\ai\provider\providers\interfaces\create_embedding
      * @param int $provider_id
-     * @param class-string<T> $interface
-     * @return array{0: T, 1: provider_entity}
+     * @param array $config_json
+     * @return chat_completion|create_embedding
      * @throws Exception
      * @throws JsonException
      */
     private function get_provider_handler_provider_and_settings_json(
         int $provider_id,
-        string $interface
+        array $config_json
     ): array {
-        // Get the provider
+        // Get the provider.
         $provider = $this->base_factory->ai()->provider()->repository()->get_by_id($provider_id);
 
         // Get the provider handler classname.
         $provider_handler_classname = $provider->get_classname();
 
-        // Decode the provider config.
-        $provider_config = json_decode($provider->get_config_json() ?? '{}', true, 512, JSON_THROW_ON_ERROR);
-
         // Create the provider handler.
-        $handler = new $provider_handler_classname($this->base_factory, $provider_config);
-
-        // Ensure the handler supports the interface.
-        if (!($handler instanceof $interface)) {
-            throw new Exception("Provider ID {$provider_id} does not support the required interface");
-        }
-
-        return [$handler, $provider];
+        return new $provider_handler_classname($this->base_factory, $config_json);
     }
 
     /**
@@ -63,23 +53,15 @@ class action_handler
      * @throws JsonException
      * @throws Exception
      */
-    public function chat_completion(array $messages, int $provider_id, string $settings_json): string
+    public function chat_completion(array $messages, int $provider_id, array $config_json): string
     {
         // Get the provider handler.
-        [$handler, $provider] = $this->get_provider_handler_provider_and_settings_json(
+        $handler = $this->get_provider_handler_provider_and_settings_json(
             $provider_id,
-            \local_mxaimanager\app\ai\provider\providers\interfaces\chat_completion::class
+            $config_json
         );
 
-        // Decode the settings json.
-        $settings = json_decode($settings_json, true, 512, JSON_THROW_ON_ERROR);
-
-        // Ensure a model is configured.
-        if (!isset($settings['model'])) {
-            throw new Exception("No model configured for chat completion with provider ID {$provider->get_id()}");
-        }
-
-        return $handler->chat_completion($messages, $settings['model']);
+        return $handler->chat_completion($messages);
     }
 
     /**
@@ -91,22 +73,14 @@ class action_handler
      * @throws JsonException
      * @throws Exception
      */
-    public function create_embedding(string $input, int $dimension, int $provider_id, string $settings_json): array
+    public function create_embedding(string $input, int $dimension, int $provider_id, array $config_json): array
     {
         // Get the provider handler.
-        [$handler, $provider] = $this->get_provider_handler_provider_and_settings_json(
+        $handler = $this->get_provider_handler_provider_and_settings_json(
             $provider_id,
-            \local_mxaimanager\app\ai\provider\providers\interfaces\create_embedding::class
+            $config_json
         );
 
-        // Decode the settings json.
-        $settings = json_decode($settings_json, true, 512, JSON_THROW_ON_ERROR);
-
-        // Ensure a model is configured.
-        if (!isset($settings['model'])) {
-            throw new Exception("No model configured for embedding creation with provider ID {$provider->get_id()}");
-        }
-
-        return $handler->get_embedding($input, $settings['model'], $dimension);
+        return $handler->get_embedding($input, $dimension);
     }
 }
