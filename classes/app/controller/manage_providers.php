@@ -103,7 +103,11 @@ class manage_providers implements interfaces\view
     {
         $this->page_setup();
 
-        $form = new \local_mxaimanager\output\manage_providers\form($this->base_factory, $this->url, true);
+        $form = new \local_mxaimanager\output\manage_providers\form(
+            $this->base_factory,
+            $this->url,
+            show_set_as_default: true
+        );
 
         if ($form->is_cancelled()) {
             $this->url->param('action', 'browse');
@@ -182,7 +186,9 @@ class manage_providers implements interfaces\view
 
         $this->page_setup();
 
-        $form = new \local_mxaimanager\output\manage_providers\form($this->base_factory, $this->url);
+        $provider_entity = $this->base_factory->ai()->provider()->repository()->get_by_id($provider_id);
+
+        $form = new \local_mxaimanager\output\manage_providers\form($this->base_factory, $this->url, $provider_entity);
 
         if ($form->is_cancelled()) {
             $this->url->param('action', 'browse');
@@ -190,8 +196,6 @@ class manage_providers implements interfaces\view
             die();
         }
 
-        $provider_entity = $this->base_factory->ai()->provider()->repository()->get_by_id($provider_id);
-        $form->load_data($provider_entity);
 
         if ($form->is_submitted() && $form->is_validated()) {
             /** @var object $data */

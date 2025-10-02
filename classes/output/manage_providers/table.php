@@ -24,8 +24,8 @@ class table extends \local_mxaimanager\app\table
         $columns[] = 'name';
         $headers[] = get_string('manage_providers:table:name', 'local_mxaimanager');
 
-        $columns[] = 'type';
-        $headers[] = get_string('manage_providers:table:type', 'local_mxaimanager');
+        $columns[] = 'classname';
+        $headers[] = get_string('manage_providers:table:classname', 'local_mxaimanager');
 
         $columns[] = 'supported_actions';
         $headers[] = get_string('manage_providers:table:supported_actions', 'local_mxaimanager');
@@ -45,7 +45,7 @@ class table extends \local_mxaimanager\app\table
         parent::__construct($url, "manage_providers_table");
     }
 
-    protected function col_type(object $record): string
+    protected function col_classname(object $record): string
     {
         $providers = $this->base_factory->ai()->provider()->get_providers();
 

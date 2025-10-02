@@ -26,9 +26,11 @@ class table extends \local_mxaimanager\app\table
 
         $columns[] = 'name';
         $headers[] = get_string('manage_features:table:name', 'local_mxaimanager');
+        $this->no_sorting('name');
 
         $columns[] = 'description';
         $headers[] = get_string('manage_features:table:description', 'local_mxaimanager');
+        $this->no_sorting('description');
 
         $columns[] = 'ai_actions';
         $headers[] = get_string('manage_features:table:ai_actions', 'local_mxaimanager');

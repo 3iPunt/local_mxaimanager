@@ -15,7 +15,7 @@ class table_actions implements \core\output\renderable, \core\output\named_templ
 
     public function get_template_name(renderer_base $renderer): string
     {
-        return 'local_mxaimanager/manage_providers/table_actions';
+        return 'local_mxaimanager/manage_features/table_actions';
     }
 
     public function export_for_template(renderer_base $output): array

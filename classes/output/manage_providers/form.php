@@ -19,28 +19,37 @@ class form extends \moodleform
 {
     private base_factory $base_factory;
     private bool $show_set_as_default;
+    private ?entity $entity;
 
     public function __construct(
         base_factory $base_factory,
         \moodle_url $url,
+        ?entity $entity = null,
         bool $show_set_as_default = false
     ) {
         $this->base_factory = $base_factory;
+        $this->entity = $entity;
         $this->show_set_as_default = $show_set_as_default;
 
         parent::__construct($url);
+
+        $this->load_data();
     }
 
-    public function load_data(entity $entity): void
+    private function load_data(): void
     {
-        $this->_form->setDefault('name', $entity->get_name());
-        $this->_form->setDefault('classname', $entity->get_classname());
+        if (!$this->entity) {
+            return;
+        }
+
+        $this->_form->setDefault('name', $this->entity->get_name());
+        $this->_form->setDefault('classname', $this->entity->get_classname());
 
         /** @var provider $provider */
-        $provider = $entity->get_classname();
+        $provider = $this->entity->get_classname();
         $prefix = $provider::get_provider_moodleform_element_prefix();
 
-        $json_config = json_decode($entity->get_config_json() ?? '{}', true, 512, JSON_THROW_ON_ERROR);
+        $json_config = json_decode($this->entity->get_config_json() ?? '{}', true, 512, JSON_THROW_ON_ERROR);
         foreach ($json_config as $key => $value) {
             $this->_form->setDefault($prefix . $key, $value);
         }
@@ -68,8 +77,11 @@ class form extends \moodleform
         $errors = [];
 
         try {
-            $this->base_factory->ai()->provider()->repository()->get_by_name($data['name']);
-            $errors['name'] = get_string('in_use', 'local_mxaimanager');
+            if ($this->entity && $this->entity->get_name() !== $data['name']) {
+                // Only check for name in use if the name has changed.
+                $this->base_factory->ai()->provider()->repository()->get_by_name($data['name']);
+                $errors['name'] = get_string('in_use', 'local_mxaimanager');
+            }
         } catch (\Exception) {
             // Name not in use, all good.
         }

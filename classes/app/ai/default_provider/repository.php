@@ -23,6 +23,8 @@ class repository extends \local_mxaimanager\app\repository
             $entity_to_be_updated = $this->get_by_action_interface($entity->get_action_interface());
             $entity_to_be_updated->set_provider_id($entity->get_provider_id());
             $this->update($entity_to_be_updated);
+
+            return $entity_to_be_updated;
         } catch (\Exception) {
             $entity->set_id(
                 $this->insert($entity)

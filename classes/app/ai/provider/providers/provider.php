@@ -18,8 +18,9 @@ abstract class provider
 
     /**
      * Define the form elements required for this provider's configuration.
-     * This method should add the elements in a group element to prevent conflicts with other providers.
-     * @param \MoodleQuickForm $mform
+     * This method should add the elements using the provided MoodleQuickForm instance and prefix the element names
+     * with the provided prefix to avoid name collisions with other providers.
+     * @param \MoodleQuickForm $mform The MoodleQuickForm instance to add elements to.
      * @param string $element_name_prefix The prefix to use for the element names.
      * @return void
      */
@@ -28,11 +29,26 @@ abstract class provider
     /**
      * Define the form validation rules for this provider's configuration.
      * This method should add the validation rules in a group element to prevent conflicts with other providers.
-     * @param array $data
-     * @param string $element_name_prefix
+     * @param array $data The form data to validate.
+     * @param string $element_name_prefix The prefix used for the element names.
      * @return array
      */
     abstract public static function moodleform_validation(array $data, string $element_name_prefix): array;
+
+    /**
+     * Define the form elements available for configuration of this action on this provider.
+     *  This method should add the elements using the provided MoodleQuickForm instance and prefix the element names
+     *  with the provided prefix to avoid name collisions with other providers.
+     * @param \MoodleQuickForm $mform The MoodleQuickForm instance to add elements to.
+     * @param class-string $interface The interface of the action being configured.
+     * @param string $element_name_prefix The prefix to use for the element names.
+     * @return void
+     */
+    abstract public static function action_moodleform_definition(
+        \MoodleQuickForm $mform,
+        string $interface,
+        string $element_name_prefix
+    ): void;
 
     /**
      * Define the prefix to use for the provider's moodleform elements.'

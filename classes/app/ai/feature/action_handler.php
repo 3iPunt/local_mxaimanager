@@ -8,11 +8,11 @@ defined('MOODLE_INTERNAL') || die();
 
 // @codeCoverageIgnoreEnd
 
-use Exception;
-use JsonException;
 use local_mxaimanager\app\ai\provider\message;
 use local_mxaimanager\app\ai\provider\providers\interfaces\chat_completion;
 use local_mxaimanager\app\ai\provider\providers\interfaces\create_embedding;
+use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
+use local_mxaimanager\app\exceptions\invalid_provider_instance_response;
 use local_mxaimanager\app\factory as base_factory;
 
 class action_handler
@@ -28,13 +28,11 @@ class action_handler
      * @param int $provider_id
      * @param array $config_json
      * @return chat_completion|create_embedding
-     * @throws Exception
-     * @throws JsonException
      */
-    private function get_provider_handler_provider_and_settings_json(
+    protected function get_provider_handler_provider_and_settings_json(
         int $provider_id,
         array $config_json
-    ): array {
+    ): mixed {
         // Get the provider.
         $provider = $this->base_factory->ai()->provider()->repository()->get_by_id($provider_id);
 
@@ -48,10 +46,10 @@ class action_handler
     /**
      * @param message[] $messages
      * @param int $provider_id
-     * @param string $settings_json
+     * @param array $config_json
      * @return string
-     * @throws JsonException
-     * @throws Exception
+     * @throws invalid_provider_instance_configuration
+     * @throws invalid_provider_instance_response
      */
     public function chat_completion(array $messages, int $provider_id, array $config_json): string
     {
@@ -61,6 +59,13 @@ class action_handler
             $config_json
         );
 
+        // Validate interface.
+        if (!($handler instanceof chat_completion)) {
+            throw new invalid_provider_instance_configuration(
+                'Provider instance ID: ' . $provider_id . ' does not support chat completion'
+            );
+        }
+
         return $handler->chat_completion($messages);
     }
 
@@ -68,10 +73,10 @@ class action_handler
      * @param string $input
      * @param int $dimension
      * @param int $provider_id
-     * @param string $settings_json
+     * @param array $config_json
      * @return float[]
-     * @throws JsonException
-     * @throws Exception
+     * @throws invalid_provider_instance_configuration
+     * @throws invalid_provider_instance_response
      */
     public function create_embedding(string $input, int $dimension, int $provider_id, array $config_json): array
     {
@@ -80,6 +85,13 @@ class action_handler
             $provider_id,
             $config_json
         );
+
+        // Validate interface.
+        if (!($handler instanceof create_embedding)) {
+            throw new invalid_provider_instance_configuration(
+                'Provider instance ID: ' . $provider_id . ' does not support embedding creation'
+            );
+        }
 
         return $handler->get_embedding($input, $dimension);
     }

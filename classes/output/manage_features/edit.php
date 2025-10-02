@@ -11,17 +11,20 @@ defined('MOODLE_INTERNAL') || die();
 use core\output\named_templatable;
 use core\output\renderable;
 use core\output\renderer_base;
+use local_mxaimanager\app\ai\feature\entity;
 use local_mxaimanager\app\factory as base_factory;
 
 class edit implements named_templatable, renderable
 {
     private base_factory $base_factory;
     private \moodleform $form;
+    private entity $feature;
 
-    public function __construct(base_factory $base_factory, \moodleform $form)
+    public function __construct(base_factory $base_factory, \moodleform $form, entity $feature)
     {
         $this->base_factory = $base_factory;
         $this->form = $form;
+        $this->feature = $feature;
     }
 
     public function get_template_name(renderer_base $renderer): string
@@ -33,6 +36,7 @@ class edit implements named_templatable, renderable
     {
         return [
             'features' => true,
+            'name' => get_string($this->feature->get_name_identifier(), $this->feature->get_component()),
             'form_html' => $this->form->render()
         ];
     }

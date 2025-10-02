@@ -11,6 +11,9 @@ defined('MOODLE_INTERNAL') || die();
 use Exception;
 use JsonException;
 use local_mxaimanager\app\ai\provider\message;
+use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
+use local_mxaimanager\app\exceptions\invalid_provider_instance_response;
+use local_mxaimanager\app\exceptions\no_provider_instance_configured;
 use local_mxaimanager\app\factory as base_factory;
 
 class handler
@@ -29,8 +32,9 @@ class handler
     /**
      * @param message[] $messages
      * @return string
-     * @throws JsonException
-     * @throws Exception
+     * @throws invalid_provider_instance_configuration
+     * @throws invalid_provider_instance_response
+     * @throws no_provider_instance_configured
      */
     public function chat_completion(array $messages): string
     {
@@ -46,8 +50,8 @@ class handler
      * @param string $input
      * @param int $dimension
      * @return float[]
-     * @throws JsonException
-     * @throws Exception
+     * @throws invalid_provider_instance_configuration
+     * @throws invalid_provider_instance_response
      */
     public function create_embedding(string $input, int $dimension): array
     {
