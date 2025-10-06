@@ -47,7 +47,7 @@ class ollama extends provider implements interfaces\chat_completion, interfaces\
         // Add base_url field
         $mform->addElement('text', "{$element_name_prefix}base_url", get_string('base_url', 'local_mxaimanager'));
         $mform->setType("{$element_name_prefix}base_url", PARAM_URL);
-        $mform->setDefault("{$element_name_prefix}base_url", 'https://api.openai.com');
+        $mform->setDefault("{$element_name_prefix}base_url", '');
 
         // Add api_key field
         $mform->addElement('text', "{$element_name_prefix}api_key", get_string('api_key', 'local_mxaimanager'));

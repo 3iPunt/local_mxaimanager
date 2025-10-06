@@ -48,14 +48,10 @@ try {
     $feature_actions = [
         $base_factory->ai()->feature()->action()->entity()
             ->set_feature_id($feature->get_id())
-            ->set_action_id(
-                $base_factory->ai()->action()->repository()->get_by_name(\local_mxaimanager\app\ai\action\manager::ACTION_CHAT_COMPLETION)->get_id()
-            ),
+            ->set_action_interface(\local_mxaimanager\app\ai\provider\providers\interfaces\chat_completion::class);
         $base_factory->ai()->feature()->action()->entity()
             ->set_feature_id($feature->get_id())
-            ->set_action_id(
-                $base_factory->ai()->action()->repository()->get_by_name(\local_mxaimanager\app\ai\action\manager::ACTION_CREATE_EMBEDDING)->get_id()
-            )
+            ->set_action_interface(\local_mxaimanager\app\ai\provider\providers\interfaces\create_embedding::class);
     ];
     foreach ($feature_actions as $feature_action) {
         $base_factory->ai()->feature()->action()->repository()->insert($feature_action);
@@ -118,5 +114,5 @@ None
 
 ## Change log
 
-* **0.0.1 (2025091900)**
+* **1.0.0 (2025100100)**
     - Initial commit.

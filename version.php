@@ -8,5 +8,5 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->component = 'local_mxaimanager';
 $plugin->version = 2025100100;
 $plugin->requires = 2025041400; // Requires Moodle 5.0
-$plugin->release = '0.0.1 (Build: 2025-09-19)';
+$plugin->release = '1.0.0 (Build: 2025-10-01)';
 $plugin->dependencies = [];
