@@ -456,7 +456,7 @@ class provider_resolver_test extends base_testcase
         $resolver = new provider_resolver($base_factory_mock, $feature_entity_mock);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage("No default provider configured for action ID {$action_interface}");
+        $this->expectExceptionMessage("No default provider configured for action interface {$action_interface}");
 
         $resolver->get_provider_and_config($action_interface);
     }

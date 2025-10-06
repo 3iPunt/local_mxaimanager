@@ -7,6 +7,9 @@ defined('MOODLE_INTERNAL') || die();
 
 // @codeCoverageIgnoreEnd
 
+global $CFG;
+require_once $CFG->libdir . '/formslib.php';
+
 use local_mxaimanager\app\ai\provider\providers\interfaces\chat_completion;
 use local_mxaimanager\app\ai\provider\providers\interfaces\create_embedding;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_response;

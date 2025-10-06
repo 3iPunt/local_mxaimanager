@@ -70,7 +70,7 @@ class provider_resolver
             return $default_action_provider->get_provider_id();
         } catch (\dml_missing_record_exception $e) {
             throw new no_provider_instance_configured(
-                "No default provider configured for action ID {$action_interface}", previous: $e
+                "No default provider configured for action interface {$action_interface}", previous: $e
             );
         }
     }
