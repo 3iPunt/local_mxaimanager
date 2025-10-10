@@ -1,0 +1,26 @@
+{{<local_mxaimanager/reusable/manage_page}}
+    {{$content}}
+        <div class="modal show position-relative" id="myModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5>{{#str}}manage_providers:delete_provider, local_mxaimanager, {{name}}{{/str}}</h5>
+                    </div>
+                    <div class="modal-body">
+                        {{#str}}manage_providers:delete_confirm, local_mxaimanager{{/str}}
+                    </div>
+                    <div class="modal-footer">
+                        <a href="/local/mxaimanager/view.php?view=manage_providers&action=delete&id={{id}}&confirmed=1"
+                        class="btn btn-danger">
+                        {{#str}}confirm, core{{/str}}
+                        </a>
+                        <a href="/local/mxaimanager/view.php?view=manage_providers&action=browse"
+                           class="btn btn-secondary">
+                            {{#str}}cancel, core{{/str}}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{/content}}
+{{/local_mxaimanager/reusable/manage_page}}

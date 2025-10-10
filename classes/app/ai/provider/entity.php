@@ -5,6 +5,7 @@ namespace local_mxaimanager\app\ai\provider;
 
 // @codeCoverageIgnoreStart
 defined('MOODLE_INTERNAL') || die();
+
 // @codeCoverageIgnoreEnd
 
 class entity extends \local_mxaimanager\app\entity
@@ -31,12 +32,12 @@ class entity extends \local_mxaimanager\app\entity
         return $this;
     }
 
-    public function get_config_json(): ?string
+    public function get_config_json(): string
     {
-        return $this->record['config_json'] ?? null;
+        return $this->record['config_json'] ?? '{}';
     }
 
-    public function set_config_json(?string $value): self
+    public function set_config_json(string $value): self
     {
         $this->record['config_json'] = $value;
         return $this;

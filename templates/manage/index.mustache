@@ -1,0 +1,24 @@
+{{<local_mxaimanager/reusable/manage_page}}
+    {{$content}}
+        {{#no_providers}}
+            <div class="alert alert-danger">
+                {{#str}}you_have_not_yet_configured_any_providers, local_mxaimanager{{/str}}
+            </div>
+        {{/no_providers}}
+        {{^no_providers}}
+            {{^no_default_providers}}
+                <div class="alert alert-success">
+                    {{#str}}you_have_configured_a_provider_and_set_the_default, local_mxaimanager{{/str}}
+                </div>
+            {{/no_default_providers}}
+        {{/no_providers}}
+        {{#no_default_providers}}
+            <div class="alert alert-danger">
+                {{#str}}you_have_not_yet_configured_default_providers, local_mxaimanager{{/str}}
+            </div>
+        {{/no_default_providers}}
+        <div class="alert alert-info">
+            {{#str}}manage:info, local_mxaimanager{{/str}}
+        </div>
+    {{/content}}
+{{/local_mxaimanager/reusable/manage_page}}

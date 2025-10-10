@@ -11,7 +11,7 @@
                        COMMENT="Name of the AI provider"/>
                 <FIELD NAME="classname" SEQUENCE="false" TYPE="char" LENGTH="255" NOTNULL="true"
                        COMMENT="Class name for the provider implementation"/>
-                <FIELD NAME="config_json" SEQUENCE="false" TYPE="text" NOTNULL="false"
+                <FIELD NAME="config_json" SEQUENCE="false" TYPE="text" NOTNULL="true"
                        COMMENT="JSON configuration for the provider"/>
                 <FIELD NAME="timecreated" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
                        COMMENT="Timestamp when the provider was created"/>
@@ -25,45 +25,11 @@
                 <INDEX NAME="name" UNIQUE="true" FIELDS="name"/>
             </INDEXES>
         </TABLE>
-        <TABLE NAME="local_mxaimanager_actions" COMMENT="Table for storing AI action information">
+        <TABLE NAME="local_mxaimanager_default_providers" COMMENT="Table for storing default providers for each action">
             <FIELDS>
                 <FIELD NAME="id" SEQUENCE="true" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID of the record"/>
-                <FIELD NAME="name" SEQUENCE="false" TYPE="char" LENGTH="255" NOTNULL="true"
-                       COMMENT="Name of the AI action"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-            <INDEXES>
-                <INDEX NAME="name" UNIQUE="true" FIELDS="name"/>
-            </INDEXES>
-        </TABLE>
-        <TABLE NAME="local_mxaimanager_provider_actions"
-               COMMENT="Table for storing supported actions and settings per provider">
-            <FIELDS>
-                <FIELD NAME="id" SEQUENCE="true" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID of the record"/>
-                <FIELD NAME="action_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
-                       COMMENT="ID of the action"/>
-                <FIELD NAME="provider_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
-                       COMMENT="ID of the provider"/>
-                <FIELD NAME="settings_json" SEQUENCE="false" TYPE="text" NOTNULL="false"
-                       COMMENT="JSON settings for the action-provider combination"/>
-            </FIELDS>
-            <KEYS>
-                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-            </KEYS>
-            <INDEXES>
-                <INDEX NAME="action_id_provider_id" UNIQUE="true" FIELDS="action_id,provider_id"/>
-                <INDEX NAME="action_id" UNIQUE="false" FIELDS="action_id"/>
-                <INDEX NAME="provider_id" UNIQUE="false" FIELDS="provider_id"/>
-            </INDEXES>
-        </TABLE>
-        <TABLE NAME="local_mxaimanager_action_default_providers"
-               COMMENT="Table for storing default providers for each action">
-            <FIELDS>
-                <FIELD NAME="id" SEQUENCE="true" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID of the record"/>
-                <FIELD NAME="action_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
-                       COMMENT="ID of the action"/>
+                <FIELD NAME="action_interface" SEQUENCE="false" TYPE="char" LENGTH="255" NOTNULL="true"
+                       COMMENT="Class name for the action interface"/>
                 <FIELD NAME="provider_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
                        COMMENT="ID of the provider"/>
             </FIELDS>
@@ -71,8 +37,8 @@
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
             <INDEXES>
-                <INDEX NAME="action_id_provider_id" UNIQUE="false" FIELDS="action_id,provider_id"/>
-                <INDEX NAME="action_id" UNIQUE="true" FIELDS="action_id"/>
+                <INDEX NAME="action_interface_provider_id" UNIQUE="false" FIELDS="action_interface,provider_id"/>
+                <INDEX NAME="action_interface" UNIQUE="true" FIELDS="action_interface"/>
                 <INDEX NAME="provider_id" UNIQUE="false" FIELDS="provider_id"/>
             </INDEXES>
         </TABLE>
@@ -101,8 +67,8 @@
                 <FIELD NAME="id" SEQUENCE="true" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID of the record"/>
                 <FIELD NAME="feature_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
                        COMMENT="ID of the feature"/>
-                <FIELD NAME="action_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
-                       COMMENT="ID of the action"/>
+                <FIELD NAME="action_interface" SEQUENCE="false" TYPE="char" LENGTH="255" NOTNULL="true"
+                       COMMENT="Class name for the action interface"/>
                 <FIELD NAME="provider_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="false"
                        COMMENT="ID of the provider (optional override)"/>
                 <FIELD NAME="settings_json" SEQUENCE="false" TYPE="text" NOTNULL="false"
@@ -112,9 +78,9 @@
                 <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
             </KEYS>
             <INDEXES>
-                <INDEX NAME="feature_action" UNIQUE="true" FIELDS="feature_id,action_id"/>
+                <INDEX NAME="feature_action" UNIQUE="true" FIELDS="feature_id,action_interface"/>
                 <INDEX NAME="feature_id" UNIQUE="false" FIELDS="feature_id"/>
-                <INDEX NAME="action_id" UNIQUE="false" FIELDS="action_id"/>
+                <INDEX NAME="action_interface" UNIQUE="false" FIELDS="action_interface"/>
                 <INDEX NAME="provider_id" UNIQUE="false" FIELDS="provider_id"/>
             </INDEXES>
         </TABLE>

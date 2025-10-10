@@ -16,251 +16,259 @@ class repository_test extends \advanced_testcase
     {
         $this->resetAfterTest();
 
-        $base_factory = base_factory::make();
+        $base_factory = \local_mxaimanager\app\factory::make();
 
-        // Remove all feature actions since db/install.php is called during setUp, which may seed feature actions.
-        foreach ($base_factory->ai()->feature()->action()->repository()->get_all() as $feature_action) {
-            $base_factory->ai()->feature()->action()->repository()->delete($feature_action->get_id());
+        // Clean up any existing feature actions to ensure a fresh state.
+        $actions = $base_factory->ai()->feature()->action()->repository()->get_all();
+        foreach ($actions as $action) {
+            $base_factory->ai()->feature()->action()->repository()->delete($action->get_id());
         }
-    }
 
-    private function create_dummy_feature(): \local_mxaimanager\app\ai\feature\entity
-    {
-        static $counter = 0;
-        $factory = base_factory::make();
-        $feature_repo = $factory->ai()->feature()->repository();
-
-        $feature = $factory->ai()->feature()->entity()
-            ->set_component('mod_test')
-            ->set_name_identifier('feature_' . ++$counter)
-            ->set_description_identifier('Feature Desc ' . $counter);
-        $feature->set_id($feature_repo->insert($feature));
-
-        return $feature;
-    }
-
-    private function create_dummy_action(): \local_mxaimanager\app\ai\action\entity
-    {
-        static $counter = 0;
-        $factory = base_factory::make();
-        $action_repo = $factory->ai()->action()->repository();
-
-        $action = $factory->ai()->action()->entity()
-            ->set_name('action_' . ++$counter);
-        $action->set_id($action_repo->insert($action));
-
-        return $action;
-    }
-
-    private function create_dummy_provider(): \local_mxaimanager\app\ai\provider\entity
-    {
-        static $counter = 0;
-        $factory = base_factory::make();
-        $provider_repo = $factory->ai()->provider()->repository();
-
-        $time = time();
-        $provider = $factory->ai()->provider()->entity()
-            ->set_name('Provider ' . ++$counter)
-            ->set_classname(\local_mxaimanager\app\ai\provider\providers\openai::class)
-            ->set_timecreated($time)
-            ->set_timemodified($time);
-        $provider->set_id($provider_repo->insert($provider));
-
-        return $provider;
-    }
-
-    public function test_get_table(): void
-    {
-        $repository = base_factory::make()->ai()->feature()->action()->repository();
-        $this->assertEquals('local_mxaimanager_feature_actions', $repository->get_table());
+        // Clean up any existing features.
+        $features = $base_factory->ai()->feature()->repository()->get_all();
+        foreach ($features as $feature) {
+            $base_factory->ai()->feature()->repository()->delete($feature->get_id());
+        }
     }
 
     public function test_get_by_id(): void
     {
-        $factory = base_factory::make();
-        $repository = $factory->ai()->feature()->action()->repository();
+        // Setup test data
+        $record_id = $this->insert_test_record([
+            'feature_id' => 100,
+            'action_interface' => 'chat_completion',
+            'provider_id' => 1,
+            'settings_json' => null,
+        ]);
 
-        $feature = $this->create_dummy_feature();
-        $action = $this->create_dummy_action();
-        $provider = $this->create_dummy_provider();
+        $entity = \local_mxaimanager\app\factory::make()->ai()->feature()->action()->repository()->get_by_id(
+            $record_id
+        );
 
-        $feature_action = $factory->ai()->feature()->action()->entity()
-            ->set_feature_id($feature->get_id())
-            ->set_action_id($action->get_id())
-            ->set_provider_id($provider->get_id())
-            ->set_settings_json(null);
-        $feature_action->set_id($repository->insert($feature_action));
+        // Assert entity properties
+        $this->assertEquals(100, $entity->get_feature_id());
+        $this->assertEquals('chat_completion', $entity->get_action_interface());
+        $this->assertEquals(1, $entity->get_provider_id());
+    }
 
-        $retrieved_fa = $repository->get_by_id($feature_action->get_id());
-
-        $this->assertEquals($feature->get_id(), $retrieved_fa->get_feature_id());
-        $this->assertEquals($action->get_id(), $retrieved_fa->get_action_id());
-        $this->assertEquals($provider->get_id(), $retrieved_fa->get_provider_id());
+    public function test_get_by_id_not_found(): void
+    {
+        $this->expectException(\dml_missing_record_exception::class);
+        \local_mxaimanager\app\factory::make()->ai()->feature()->action()->repository()->get_by_id(999999);
     }
 
     public function test_get_all_by_feature_id(): void
     {
-        $factory = base_factory::make();
-        $repository = $factory->ai()->feature()->action()->repository();
+        // Setup multiple records for same feature
+        $this->insert_test_record([
+            'feature_id' => 50,
+            'action_interface' => 'chat_completion',
+            'provider_id' => 1,
+            'settings_json' => null,
+        ]);
+        $this->insert_test_record([
+            'feature_id' => 50,
+            'action_interface' => 'image_generation',
+            'provider_id' => 2,
+            'settings_json' => null,
+        ]);
+        // Different feature
+        $this->insert_test_record([
+            'feature_id' => 51,
+            'action_interface' => 'chat_completion',
+            'provider_id' => 1,
+            'settings_json' => null,
+        ]);
 
-        $feature = $this->create_dummy_feature();
-        $action1 = $this->create_dummy_action();
-        $action2 = $this->create_dummy_action();
-        $provider = $this->create_dummy_provider();
+        $collection = \local_mxaimanager\app\factory::make()->ai()->feature()->action()->repository(
+        )->get_all_by_feature_id(50);
 
-        $fa1 = $factory->ai()->feature()->action()->entity()
-            ->set_feature_id($feature->get_id())
-            ->set_action_id($action1->get_id())
-            ->set_provider_id($provider->get_id());
-        $repository->insert($fa1);
+        $this->assertCount(2, $collection);
+        $entities = iterator_to_array($collection, false);
 
-        $fa2 = $factory->ai()->feature()->action()->entity()
-            ->set_feature_id($feature->get_id())
-            ->set_action_id($action2->get_id())
-            ->set_provider_id($provider->get_id());
-        $repository->insert($fa2);
+        // Assert both entities belong to feature 50
+        $this->assertEquals(50, $entities[0]->get_feature_id());
+        $this->assertEquals(50, $entities[1]->get_feature_id());
 
-        $feature_actions = $repository->get_all_by_feature_id($feature->get_id());
-
-        $this->assertCount(2, $feature_actions);
-
-        $actions_array = iterator_to_array($feature_actions);
-        $action_ids = array_map(function ($fa) {
-            return $fa->get_action_id();
-        }, $actions_array);
-        sort($action_ids);
-
-        $this->assertEquals([$action1->get_id(), $action2->get_id()], $action_ids);
+        // Assert different action interfaces
+        $interfaces = array_map(fn($e) => $e->get_action_interface(), $entities);
+        $this->assertContains('chat_completion', $interfaces);
+        $this->assertContains('image_generation', $interfaces);
     }
 
-    public function test_get_all_by_action_id(): void
+    public function test_get_all_by_feature_id_no_records(): void
     {
-        $factory = base_factory::make();
-        $repository = $factory->ai()->feature()->action()->repository();
+        $collection = \local_mxaimanager\app\factory::make()->ai()->feature()->action()->repository(
+        )->get_all_by_feature_id(999);
 
-        $feature1 = $this->create_dummy_feature();
-        $feature2 = $this->create_dummy_feature();
-        $action = $this->create_dummy_action();
-        $provider = $this->create_dummy_provider();
+        $this->assertCount(0, $collection);
+    }
 
-        $fa1 = $factory->ai()->feature()->action()->entity()
-            ->set_feature_id($feature1->get_id())
-            ->set_action_id($action->get_id())
-            ->set_provider_id($provider->get_id());
-        $repository->insert($fa1);
+    public function test_get_all_by_action_interface(): void
+    {
+        // Setup multiple records for same action interface
+        $this->insert_test_record([
+            'feature_id' => 10,
+            'action_interface' => 'chat_completion',
+            'provider_id' => 1,
+            'settings_json' => null,
+        ]);
+        $this->insert_test_record([
+            'feature_id' => 20,
+            'action_interface' => 'chat_completion',
+            'provider_id' => 2,
+            'settings_json' => null,
+        ]);
+        // Different action interface
+        $this->insert_test_record([
+            'feature_id' => 30,
+            'action_interface' => 'embedding',
+            'provider_id' => 1,
+            'settings_json' => null,
+        ]);
 
-        $fa2 = $factory->ai()->feature()->action()->entity()
-            ->set_feature_id($feature2->get_id())
-            ->set_action_id($action->get_id())
-            ->set_provider_id($provider->get_id());
-        $repository->insert($fa2);
+        $collection = \local_mxaimanager\app\factory::make()->ai()->feature()->action()->repository(
+        )->get_all_by_action_interface('chat_completion');
 
-        $feature_actions = $repository->get_all_by_action_id($action->get_id());
+        $this->assertCount(2, $collection);
+        $entities = iterator_to_array($collection, false);
 
-        $this->assertCount(2, $feature_actions);
+        // All should have chat_completion action
+        foreach ($entities as $entity) {
+            $this->assertEquals('chat_completion', $entity->get_action_interface());
+        }
 
-        $actions_array = iterator_to_array($feature_actions);
-        $feature_ids = array_map(function ($fa) {
-            return $fa->get_feature_id();
-        }, $actions_array);
-        sort($feature_ids);
-
-        $this->assertEquals([$feature1->get_id(), $feature2->get_id()], $feature_ids);
+        // Should have different feature_ids
+        $feature_ids = array_map(fn($e) => $e->get_feature_id(), $entities);
+        $this->assertContains(10, $feature_ids);
+        $this->assertContains(20, $feature_ids);
     }
 
     public function test_get_all_by_provider_id(): void
     {
-        $factory = base_factory::make();
-        $repository = $factory->ai()->feature()->action()->repository();
+        // Setup records with same provider
+        $this->insert_test_record([
+            'feature_id' => 100,
+            'action_interface' => 'chat_completion',
+            'provider_id' => 5,
+        ]);
+        $this->insert_test_record([
+            'feature_id' => 101,
+            'action_interface' => 'embedding',
+            'provider_id' => 5,
+        ]);
+        // Different provider
+        $this->insert_test_record([
+            'feature_id' => 102,
+            'action_interface' => 'chat_completion',
+            'provider_id' => 6,
+        ]);
 
-        $feature = $this->create_dummy_feature();
-        $action1 = $this->create_dummy_action();
-        $action2 = $this->create_dummy_action();
-        $provider = $this->create_dummy_provider();
+        $collection = \local_mxaimanager\app\factory::make()->ai()->feature()->action()->repository(
+        )->get_all_by_provider_id(5);
 
-        $fa1 = $factory->ai()->feature()->action()->entity()
-            ->set_feature_id($feature->get_id())
-            ->set_action_id($action1->get_id())
-            ->set_provider_id($provider->get_id());
-        $repository->insert($fa1);
+        $this->assertCount(2, $collection);
+        $entities = iterator_to_array($collection, false);
 
-        $fa2 = $factory->ai()->feature()->action()->entity()
-            ->set_feature_id($feature->get_id())
-            ->set_action_id($action2->get_id())
-            ->set_provider_id($provider->get_id());
-        $repository->insert($fa2);
-
-        $feature_actions = $repository->get_all_by_provider_id($provider->get_id());
-
-        $this->assertCount(2, $feature_actions);
+        foreach ($entities as $entity) {
+            $this->assertEquals(5, $entity->get_provider_id());
+        }
     }
 
     public function test_get_all_by_provider_id_null(): void
     {
-        $factory = base_factory::make();
-        $repository = $factory->ai()->feature()->action()->repository();
+        // Setup records with null provider
+        $this->insert_test_record([
+            'feature_id' => 200,
+            'action_interface' => 'chat_completion',
+            'provider_id' => null,
+        ]);
+        $this->insert_test_record([
+            'feature_id' => 201,
+            'action_interface' => 'embedding',
+            'provider_id' => null,
+        ]);
+        // Non-null provider
+        $this->insert_test_record([
+            'feature_id' => 202,
+            'action_interface' => 'chat_completion',
+            'provider_id' => 1,
+        ]);
 
-        $feature = $this->create_dummy_feature();
-        $action = $this->create_dummy_action();
+        $collection = \local_mxaimanager\app\factory::make()->ai()->feature()->action()->repository(
+        )->get_all_by_provider_id(null);
 
-        $fa = $factory->ai()->feature()->action()->entity()
-            ->set_feature_id($feature->get_id())
-            ->set_action_id($action->get_id())
-            ->set_provider_id(null);
-        $repository->insert($fa);
+        $this->assertCount(2, $collection);
+        $entities = iterator_to_array($collection, false);
 
-        $feature_actions = $repository->get_all_by_provider_id(null);
-
-        $this->assertCount(1, $feature_actions);
-        $this->assertNull($feature_actions->first()->get_provider_id());
+        foreach ($entities as $entity) {
+            $this->assertNull($entity->get_provider_id());
+        }
     }
 
-    public function test_get_by_feature_id_and_action_id(): void
+    public function test_get_by_feature_id_and_action_interface(): void
     {
-        $factory = base_factory::make();
-        $repository = $factory->ai()->feature()->action()->repository();
+        // Setup record
+        $this->insert_test_record([
+            'feature_id' => 42,
+            'action_interface' => 'custom_action',
+            'provider_id' => 3,
+        ]);
 
-        $feature = $this->create_dummy_feature();
-        $action = $this->create_dummy_action();
-        $provider = $this->create_dummy_provider();
+        $entity = \local_mxaimanager\app\factory::make()->ai()->feature()->action()->repository(
+        )->get_by_feature_id_and_action_interface(42, 'custom_action');
 
-        $feature_action = $factory->ai()->feature()->action()->entity()
-            ->set_feature_id($feature->get_id())
-            ->set_action_id($action->get_id())
-            ->set_provider_id($provider->get_id());
-        $repository->insert($feature_action);
+        $this->assertEquals(42, $entity->get_feature_id());
+        $this->assertEquals('custom_action', $entity->get_action_interface());
+        $this->assertEquals(3, $entity->get_provider_id());
+    }
 
-        $retrieved_fa = $repository->get_by_feature_id_and_action_id($feature->get_id(), $action->get_id());
-
-        $this->assertEquals($feature->get_id(), $retrieved_fa->get_feature_id());
-        $this->assertEquals($action->get_id(), $retrieved_fa->get_action_id());
-        $this->assertEquals($provider->get_id(), $retrieved_fa->get_provider_id());
+    public function test_get_by_feature_id_and_action_interface_not_found(): void
+    {
+        $this->expectException(\dml_missing_record_exception::class);
+        \local_mxaimanager\app\factory::make()->ai()->feature()->action()->repository(
+        )->get_by_feature_id_and_action_interface(999, 'missing_action');
     }
 
     public function test_get_all(): void
     {
-        $factory = base_factory::make();
-        $repository = $factory->ai()->feature()->action()->repository();
+        // Setup multiple records
+        $this->insert_test_record(['feature_id' => 1, 'action_interface' => 'action1', 'provider_id' => 1]);
+        $this->insert_test_record(['feature_id' => 2, 'action_interface' => 'action2', 'provider_id' => 2]);
+        $this->insert_test_record(['feature_id' => 3, 'action_interface' => 'action3', 'provider_id' => null]);
 
-        $feature1 = $this->create_dummy_feature();
-        $feature2 = $this->create_dummy_feature();
-        $action = $this->create_dummy_action();
-        $provider = $this->create_dummy_provider();
+        $collection = \local_mxaimanager\app\factory::make()->ai()->feature()->action()->repository()->get_all();
 
-        $fa1 = $factory->ai()->feature()->action()->entity()
-            ->set_feature_id($feature1->get_id())
-            ->set_action_id($action->get_id())
-            ->set_provider_id($provider->get_id());
-        $repository->insert($fa1);
+        $this->assertCount(3, $collection);
+        $entities = iterator_to_array($collection, false);
 
-        $fa2 = $factory->ai()->feature()->action()->entity()
-            ->set_feature_id($feature2->get_id())
-            ->set_action_id($action->get_id())
-            ->set_provider_id($provider->get_id());
-        $repository->insert($fa2);
+        // Check various properties across all entities
+        $feature_ids = array_map(fn($e) => $e->get_feature_id(), $entities);
+        $this->assertContains(1, $feature_ids);
+        $this->assertContains(2, $feature_ids);
+        $this->assertContains(3, $feature_ids);
 
-        $all_feature_actions = $repository->get_all();
+        $action_interfaces = array_map(fn($e) => $e->get_action_interface(), $entities);
+        $this->assertContains('action1', $action_interfaces);
+        $this->assertContains('action2', $action_interfaces);
+        $this->assertContains('action3', $action_interfaces);
+    }
 
-        $this->assertCount(2, $all_feature_actions);
+    public function test_get_all_empty_table(): void
+    {
+        $collection = \local_mxaimanager\app\factory::make()->ai()->feature()->action()->repository()->get_all();
+
+        $this->assertCount(0, $collection);
+    }
+
+    /**
+     * Helper to insert test records and return ID
+     * @param array $data
+     * @return int
+     */
+    private function insert_test_record(array $data): int
+    {
+        global $DB;
+        return $DB->insert_record('local_mxaimanager_feature_actions', (object)$data);
     }
 }

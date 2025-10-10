@@ -1,0 +1,16 @@
+<div class="alert alert-info mb-0">
+    <ul class="list-unstyled mb-0">
+        {{#chat}}
+            <li>
+                <i class="fa fa-square-check"></i>
+                {{#str}}uses_chat, local_mxaimanager{{/str}}
+            </li>
+        {{/chat}}
+        {{#embedding}}
+            <li>
+                <i class="fa fa-square-check"></i>
+                {{#str}}uses_embedding, local_mxaimanager{{/str}}
+            </li>
+        {{/embedding}}
+    </ul>
+</div>

@@ -31,13 +31,47 @@ class repository extends \local_mxaimanager\app\repository
         );
     }
 
+    public function get_all_by_classname(string $classname): \local_mxaimanager\app\collection
+    {
+        return $this->base_factory->collection(
+            array_map(
+                function (object $record) {
+                    return $this->base_factory->ai()->provider()->entity((array)$record);
+                },
+                $this->db->get_records($this->get_table(), ['classname' => $classname])
+            )
+        );
+    }
+
+    public function get_all_by_classnames(array $classnames): \local_mxaimanager\app\collection
+    {
+        if (empty($classnames)) {
+            return $this->base_factory->collection();
+        }
+
+        [$in_sql, $params] = $this->db->get_in_or_equal($classnames);
+
+        $sql = "SELECT *
+                  FROM {{$this->get_table()}}
+                 WHERE classname $in_sql";
+        return $this->base_factory->collection(
+            array_map(
+                function (object $record) {
+                    return $this->base_factory->ai()->provider()->entity((array)$record);
+                },
+                $this->db->get_records_sql($sql, $params)
+            )
+        );
+    }
+
     public function get_all(): \local_mxaimanager\app\collection
     {
         return $this->base_factory->collection(
             array_map(
                 function (object $record) {
                     return $this->base_factory->ai()->provider()->entity((array)$record);
-                }, $this->db->get_records($this->get_table())
+                },
+                $this->db->get_records($this->get_table())
             )
         );
     }

@@ -1,0 +1,39 @@
+<?php
+
+namespace local_mxaimanager\output\manage_providers;
+
+
+// @codeCoverageIgnoreStart
+defined('MOODLE_INTERNAL') || die();
+
+// @codeCoverageIgnoreEnd
+
+use core\output\named_templatable;
+use core\output\renderable;
+use core\output\renderer_base;
+use local_mxaimanager\app\factory as base_factory;
+
+class add implements named_templatable, renderable
+{
+    private base_factory $base_factory;
+    private \moodleform $form;
+
+    public function __construct(base_factory $base_factory, \moodleform $form)
+    {
+        $this->base_factory = $base_factory;
+        $this->form = $form;
+    }
+
+    public function get_template_name(renderer_base $renderer): string
+    {
+        return 'local_mxaimanager/manage_providers/add';
+    }
+
+    public function export_for_template(renderer_base $output): array
+    {
+        return [
+            'providers' => true,
+            'form_html' => $this->form->render()
+        ];
+    }
+}

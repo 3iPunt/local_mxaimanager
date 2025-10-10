@@ -5,6 +5,7 @@ namespace local_mxaimanager\app\ai\feature\action;
 
 // @codeCoverageIgnoreStart
 defined('MOODLE_INTERNAL') || die();
+
 // @codeCoverageIgnoreEnd
 
 class entity extends \local_mxaimanager\app\entity
@@ -20,14 +21,14 @@ class entity extends \local_mxaimanager\app\entity
         return $this;
     }
 
-    public function get_action_id(): int
+    public function get_action_interface(): string
     {
-        return $this->record['action_id'] ?? 0;
+        return $this->record['action_interface'] ?? '';
     }
 
-    public function set_action_id(int $value): self
+    public function set_action_interface(string $value): self
     {
-        $this->record['action_id'] = $value;
+        $this->record['action_interface'] = $value;
         return $this;
     }
 
@@ -58,7 +59,7 @@ class entity extends \local_mxaimanager\app\entity
         return [
             'id' => $this->get_id(),
             'feature_id' => $this->get_feature_id(),
-            'action_id' => $this->get_action_id(),
+            'action_interface' => $this->get_action_interface(),
             'provider_id' => $this->get_provider_id(),
             'settings_json' => $this->get_settings_json(),
         ];

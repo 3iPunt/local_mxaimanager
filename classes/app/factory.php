@@ -23,6 +23,18 @@ class factory
         return $DB;
     }
 
+    public function page(): \moodle_page
+    {
+        global $PAGE;
+        return $PAGE;
+    }
+
+    public function output(): \bootstrap_renderer|\core_renderer
+    {
+        global $OUTPUT;
+        return $OUTPUT;
+    }
+
     public function collection(array $records = []): collection
     {
         return new collection($records);
@@ -36,5 +48,10 @@ class factory
     public function curl(): \curl
     {
         return new \curl();
+    }
+
+    public function controller(): controller\factory
+    {
+        return new controller\factory($this);
     }
 }

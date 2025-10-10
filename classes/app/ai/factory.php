@@ -5,6 +5,7 @@ namespace local_mxaimanager\app\ai;
 
 // @codeCoverageIgnoreStart
 defined('MOODLE_INTERNAL') || die();
+
 // @codeCoverageIgnoreEnd
 
 class factory
@@ -21,9 +22,9 @@ class factory
         return new provider\factory($this->base_factory);
     }
 
-    public function action(): action\factory
+    public function default_provider(): default_provider\factory
     {
-        return new action\factory($this->base_factory);
+        return new default_provider\factory($this->base_factory);
     }
 
     public function feature(): feature\factory

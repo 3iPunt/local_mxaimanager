@@ -136,4 +136,128 @@ class repository_test extends \advanced_testcase
             $found_provider2->get_classname()
         );
     }
+
+    public function test_get_all_by_classname(): void
+    {
+        $factory = base_factory::make();
+        $repository = $factory->ai()->provider()->repository();
+
+        $time = time();
+
+        // Create providers with different classnames
+        $openai_provider = $factory->ai()->provider()->entity()
+            ->set_name('OpenAI Provider 1')
+            ->set_classname(\local_mxaimanager\app\ai\provider\providers\openai::class)
+            ->set_timecreated($time)
+            ->set_timemodified($time);
+        $openai_provider->set_id($repository->insert($openai_provider));
+
+        $openai_provider2 = $factory->ai()->provider()->entity()
+            ->set_name('OpenAI Provider 2')
+            ->set_classname(\local_mxaimanager\app\ai\provider\providers\openai::class)
+            ->set_timecreated($time)
+            ->set_timemodified($time);
+        $openai_provider2->set_id($repository->insert($openai_provider2));
+
+        $mistral_provider = $factory->ai()->provider()->entity()
+            ->set_name('Mistral Provider')
+            ->set_classname(\local_mxaimanager\app\ai\provider\providers\mistral::class)
+            ->set_timecreated($time)
+            ->set_timemodified($time);
+        $mistral_provider->set_id($repository->insert($mistral_provider));
+
+        // Test filtering by OpenAI classname
+        $openai_providers = $repository->get_all_by_classname(
+            \local_mxaimanager\app\ai\provider\providers\openai::class
+        );
+
+        $this->assertCount(2, $openai_providers);
+        $providers_array = iterator_to_array($openai_providers, false);
+
+        // Verify all returned providers have the correct classname
+        foreach ($providers_array as $provider) {
+            $this->assertEquals(
+                \local_mxaimanager\app\ai\provider\providers\openai::class,
+                $provider->get_classname()
+            );
+        }
+
+        // Check both providers are returned
+        $names = array_map(fn($p) => $p->get_name(), $providers_array);
+        $this->assertContains('OpenAI Provider 1', $names);
+        $this->assertContains('OpenAI Provider 2', $names);
+    }
+
+    public function test_get_all_by_classnames(): void
+    {
+        $factory = base_factory::make();
+        $repository = $factory->ai()->provider()->repository();
+
+        $time = time();
+
+        // Create providers with different classnames
+        $openai_provider = $factory->ai()->provider()->entity()
+            ->set_name('OpenAI Provider')
+            ->set_classname(\local_mxaimanager\app\ai\provider\providers\openai::class)
+            ->set_timecreated($time)
+            ->set_timemodified($time);
+        $openai_provider->set_id($repository->insert($openai_provider));
+
+        $mistral_provider = $factory->ai()->provider()->entity()
+            ->set_name('Mistral Provider')
+            ->set_classname(\local_mxaimanager\app\ai\provider\providers\mistral::class)
+            ->set_timecreated($time)
+            ->set_timemodified($time);
+        $mistral_provider->set_id($repository->insert($mistral_provider));
+
+        $anthropic_provider = $factory->ai()->provider()->entity()
+            ->set_name('Anthropic Provider')
+            ->set_classname(\local_mxaimanager\app\ai\provider\providers\anthropic::class)
+            ->set_timecreated($time)
+            ->set_timemodified($time);
+        $anthropic_provider->set_id($repository->insert($anthropic_provider));
+
+        // Test filtering by multiple classnames
+        $selected_providers = $repository->get_all_by_classnames([
+            \local_mxaimanager\app\ai\provider\providers\openai::class,
+            \local_mxaimanager\app\ai\provider\providers\mistral::class
+        ]);
+
+        $this->assertCount(2, $selected_providers);
+        $providers_array = iterator_to_array($selected_providers, false);
+
+        // Verify only providers with the specified classnames are returned
+        $classnames = array_map(fn($p) => $p->get_classname(), $providers_array);
+        $this->assertContains(\local_mxaimanager\app\ai\provider\providers\openai::class, $classnames);
+        $this->assertContains(\local_mxaimanager\app\ai\provider\providers\mistral::class, $classnames);
+        $this->assertNotContains(\local_mxaimanager\app\ai\provider\providers\anthropic::class, $classnames);
+
+        // Check specific providers are included
+        $names = array_map(fn($p) => $p->get_name(), $providers_array);
+        $this->assertContains('OpenAI Provider', $names);
+        $this->assertContains('Mistral Provider', $names);
+        $this->assertNotContains('Anthropic Provider', $names);
+    }
+
+    public function test_get_all_by_classnames_empty_array(): void
+    {
+        $factory = base_factory::make();
+        $repository = $factory->ai()->provider()->repository();
+
+        // Test with empty array - should return empty collection
+        $empty_result = $repository->get_all_by_classnames([]);
+
+        $this->assertCount(0, $empty_result);
+    }
+
+    public function test_get_all_by_classname_no_matches(): void
+    {
+        $factory = base_factory::make();
+        $repository = $factory->ai()->provider()->repository();
+
+        // Test with classname that doesn't exist
+        $no_matches = $repository->get_all_by_classname('NonExistentClass');
+
+        $this->assertCount(0, $no_matches);
+    }
 }

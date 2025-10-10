@@ -12,40 +12,6 @@ jobs:
     strategy:
       matrix:
         include:
-          # Moodle 4.4
-          ## MySQL
-          - php: 8.1
-            os: ubuntu-latest
-            moodle: MOODLE_404_STABLE
-            experimental: false
-            dbtype: mysqli
-          - php: 8.2
-            os: ubuntu-latest
-            moodle: MOODLE_404_STABLE
-            dbtype: mysqli
-            experimental: false
-          - php: 8.3
-            os: ubuntu-latest
-            moodle: MOODLE_404_STABLE
-            dbtype: mysqli
-            experimental: false
-          ## MSSQL
-          - php: 8.1
-            os: ubuntu-latest
-            moodle: MOODLE_404_STABLE
-            experimental: false
-            dbtype: sqlsrv
-          - php: 8.2
-            os: ubuntu-latest
-            moodle: MOODLE_404_STABLE
-            dbtype: sqlsrv
-            experimental: false
-          - php: 8.3
-            os: ubuntu-latest
-            moodle: MOODLE_404_STABLE
-            dbtype: sqlsrv
-            experimental: false
-
           # Moodle 5.0
           ## MySQL
           - php: 8.2
