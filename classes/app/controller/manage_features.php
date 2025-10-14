@@ -43,6 +43,9 @@ class manage_features implements interfaces\view
 
     private function page_setup(): void
     {
+        require_login();
+        require_capability('local/mxaimanager:manage_configuration', \core\context\system::instance());
+
         $this->page->set_url($this->url);
         $this->page->set_context(\core\context\system::instance());
     }
