@@ -7,6 +7,7 @@ defined('MOODLE_INTERNAL') || die();
 
 // @codeCoverageIgnoreEnd
 
+use core\router\require_login;
 use local_mxaimanager\app\factory as base_factory;
 use local_mxaimanager\output\manage\form;
 
@@ -39,6 +40,9 @@ class manage implements interfaces\view
 
     private function page_setup(): void
     {
+        require_login();
+        require_capability('local/mxaimanager:manage_configuration', \core\context\system::instance());
+
         $this->page->set_url($this->url);
         $this->page->set_context(\core\context\system::instance());
     }
