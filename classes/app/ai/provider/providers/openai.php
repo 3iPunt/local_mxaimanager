@@ -42,6 +42,28 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
         ]);
     }
 
+    private static function add_chat_model_field(\MoodleQuickForm $mform, string $element_name_prefix): void
+    {
+        $mform->addElement(
+            'text',
+            "{$element_name_prefix}chat_model",
+            get_string('default_chat_model', 'local_mxaimanager')
+        );
+        $mform->setType("{$element_name_prefix}chat_model", PARAM_TEXT);
+        $mform->addHelpButton("{$element_name_prefix}chat_model", 'openai_chat_model', 'local_mxaimanager');
+    }
+
+    private static function add_embedding_model_field(\MoodleQuickForm $mform, string $element_name_prefix): void
+    {
+        $mform->addElement(
+            'text',
+            "{$element_name_prefix}embedding_model",
+            get_string('default_embedding_model', 'local_mxaimanager')
+        );
+        $mform->setType("{$element_name_prefix}embedding_model", PARAM_TEXT);
+        $mform->addHelpButton("{$element_name_prefix}embedding_model", 'openai_embedding_model', 'local_mxaimanager');
+    }
+
     public static function moodleform_definition(\MoodleQuickForm $mform, string $element_name_prefix): void
     {
         // Add base_url field
@@ -55,20 +77,10 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
         $mform->setDefault("{$element_name_prefix}api_key", '');
 
         // Add chat model field
-        $mform->addElement(
-            'text',
-            "{$element_name_prefix}chat_model",
-            get_string('default_chat_model', 'local_mxaimanager')
-        );
-        $mform->setType("{$element_name_prefix}chat_model", PARAM_TEXT);
+        self::add_chat_model_field($mform, $element_name_prefix);
 
         // Add embedding model field
-        $mform->addElement(
-            'text',
-            "{$element_name_prefix}embedding_model",
-            get_string('default_embedding_model', 'local_mxaimanager')
-        );
-        $mform->setType("{$element_name_prefix}embedding_model", PARAM_TEXT);
+        self::add_embedding_model_field($mform, $element_name_prefix);
     }
 
     public static function moodleform_validation(array $data, string $element_name_prefix): array
@@ -101,20 +113,10 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
     ): void {
         switch ($interface) {
             case interfaces\chat_completion::class:
-                $mform->addElement(
-                    'text',
-                    "{$element_name_prefix}chat_model",
-                    get_string('default_chat_model', 'local_mxaimanager')
-                );
-                $mform->setType("{$element_name_prefix}chat_model", PARAM_TEXT);
+                self::add_chat_model_field($mform, $element_name_prefix);
                 break;
             case interfaces\create_embedding::class:
-                $mform->addElement(
-                    'text',
-                    "{$element_name_prefix}embedding_model",
-                    get_string('default_embedding_model', 'local_mxaimanager')
-                );
-                $mform->setType("{$element_name_prefix}embedding_model", PARAM_TEXT);
+                self::add_embedding_model_field($mform, $element_name_prefix);
                 break;
             default:
         }
