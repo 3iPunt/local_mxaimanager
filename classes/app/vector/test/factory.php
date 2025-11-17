@@ -19,11 +19,6 @@ class factory implements vector\interfaces\db
         $this->base_factory = $base_factory;
     }
 
-    public function collection(): vector\interfaces\db_collection
-    {
-        return new collection();
-    }
-
     public function vector(): vector\interfaces\db_vector
     {
         return new vector\test\vector();

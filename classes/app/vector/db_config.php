@@ -5,7 +5,6 @@ namespace local_mxaimanager\app\vector;
 
 // @codeCoverageIgnoreStart
 defined('MOODLE_INTERNAL') || die();
-
 // @codeCoverageIgnoreEnd
 
 class db_config

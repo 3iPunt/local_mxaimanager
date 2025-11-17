@@ -42,18 +42,11 @@ class factory
         );
 
         switch ($config->type) {
-            case 'milvus':
-                return $this->milvus($db_config);
             case 'elasticsearch':
                 return $this->elasticsearch($db_config);
             default:
                 throw new \Exception("Unsupported vector db type: '{$this->get_config()->type}'");
         }
-    }
-
-    public function milvus(db_config $db_config): milvus\factory
-    {
-        return new milvus\factory($this->base_factory, $db_config);
     }
 
     public function elasticsearch(db_config $db_config): elasticsearch\factory
