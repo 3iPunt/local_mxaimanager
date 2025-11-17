@@ -45,6 +45,16 @@ class factory
         return $this->instances[__FUNCTION__] ??= new ai\factory($this);
     }
 
+    public function vector(): vector\factory
+    {
+        return $this->instances[__FUNCTION__] ??= new vector\factory($this);
+    }
+
+    public function cfg(): object {
+        global $CFG;
+        return $CFG;
+    }
+
     public function curl(): \curl
     {
         return new \curl();
