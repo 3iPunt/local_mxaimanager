@@ -114,5 +114,7 @@ None
 
 ## Change log
 
+* **1.0.1 (2025111700)**
+    - Implemented vector API
 * **1.0.0 (2025100100)**
     - Initial commit.
