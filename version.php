@@ -6,7 +6,7 @@ defined('MOODLE_INTERNAL') || die();
 
 /** @var object $plugin */
 $plugin->component = 'local_mxaimanager';
-$plugin->version = 2025111700;
-$plugin->requires = 2024042200; // Requires Moodle 4.4
+$plugin->version = 2025111900;
+$plugin->requires = 2025041400; // Requires Moodle 5.0
 $plugin->release = '1.0.1 (Build: 2025-11-17)';
 $plugin->dependencies = [];
