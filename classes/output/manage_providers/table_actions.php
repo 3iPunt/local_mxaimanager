@@ -2,9 +2,9 @@
 
 namespace local_mxaimanager\output\manage_providers;
 
-use core\output\renderer_base;
+use renderer_base;
 
-class table_actions implements \core\output\renderable, \core\output\named_templatable
+class table_actions implements \renderable, \core\output\named_templatable
 {
     private int $id;
 
