@@ -38,7 +38,9 @@ class vector implements \local_mxaimanager\app\vector\interfaces\db_vector
 
     private function get_base_url(): string
     {
-        return "http://{$this->db_config->get_host()}:{$this->db_config->get_port()}";
+        $protocol = $this->db_config->is_tls() ? 'https' : 'http';
+
+        return "{$protocol}://{$this->db_config->get_host()}:{$this->db_config->get_port()}";
     }
 
     public function insert(string $collection, array $record): int

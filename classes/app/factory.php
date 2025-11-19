@@ -7,6 +7,9 @@ defined('MOODLE_INTERNAL') || die();
 
 // @codeCoverageIgnoreEnd
 
+global $CFG;
+require_once $CFG->libdir . '/filelib.php';
+
 class factory
 {
     private static self $instance;

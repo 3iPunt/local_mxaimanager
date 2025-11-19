@@ -34,11 +34,11 @@ class factory
         }
 
         $db_config = new db_config(
-            dbname: $config->dbname,
             host: $config->host,
             port: $config->port,
             username: $config->username,
             password: $config->password,
+            tls: $config->tls,
         );
 
         switch ($config->type) {

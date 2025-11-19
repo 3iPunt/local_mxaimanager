@@ -9,29 +9,24 @@ defined('MOODLE_INTERNAL') || die();
 
 class db_config
 {
-    private string $dbname;
     private string $host;
     private string $port;
     private string $username;
     private string $password;
+    private bool $tls;
 
     public function __construct(
-        string $dbname,
         string $host,
         string $port,
         string $username,
-        string $password
+        string $password,
+        bool $tls
     ) {
-        $this->dbname = $dbname;
         $this->host = $host;
         $this->port = $port;
         $this->username = $username;
         $this->password = $password;
-    }
-
-    public function get_dbname(): string
-    {
-        return $this->dbname;
+        $this->tls = $tls;
     }
 
     public function get_host(): string
@@ -52,5 +47,10 @@ class db_config
     public function get_password(): string
     {
         return $this->password;
+    }
+
+    public function is_tls(): bool
+    {
+        return $this->tls;
     }
 }
