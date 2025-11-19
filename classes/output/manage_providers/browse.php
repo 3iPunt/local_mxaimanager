@@ -9,8 +9,8 @@ defined('MOODLE_INTERNAL') || die();
 // @codeCoverageIgnoreEnd
 
 use core\output\named_templatable;
-use core\output\renderable;
-use core\output\renderer_base;
+use renderable;
+use renderer_base;
 use local_mxaimanager\app\factory as base_factory;
 
 class browse implements named_templatable, renderable

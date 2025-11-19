@@ -2,11 +2,11 @@
 
 namespace local_mxaimanager\output\manage_features;
 
-use core\output\renderer_base;
+use renderer_base;
 use local_mxaimanager\app\ai\feature\action\entity;
 use local_mxaimanager\app\factory as base_factory;
 
-class table_ai_actions implements \core\output\renderable, \core\output\named_templatable
+class table_ai_actions implements \renderable, \core\output\named_templatable
 {
     private base_factory $base_factory;
     private int $feature_id;
