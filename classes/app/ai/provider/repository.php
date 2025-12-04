@@ -106,6 +106,10 @@ class repository extends \local_mxaimanager\app\repository
         return $db_entities->merge($preconfigured_entities);
     }
 
+    /**
+     * @return \local_mxaimanager\app\collection<entity>
+     * @throws \dml_exception
+     */
     public function get_all(): \local_mxaimanager\app\collection
     {
         $db_entities = $this->base_factory->collection(

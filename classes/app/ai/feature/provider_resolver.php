@@ -79,7 +79,7 @@ class provider_resolver
                 $is_default = isset($config['default_unless_explicitly_set']) && $config['default_unless_explicitly_set'];
                 return $supports && $is_default;
             });
-            if (!$preconfigured_providers->is_empty()) {
+            if (!$preconfigured_providers->empty()) {
                 return $preconfigured_providers->first()->get_id();
             }
             throw new no_provider_instance_configured(

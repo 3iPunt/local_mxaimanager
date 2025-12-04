@@ -26,12 +26,16 @@ $string['mistral_chat_model'] = 'Mistral Chat Model';
 $string['mistral_chat_model_help'] = 'Her kan du angive den chat-model, der skal bruges. For eksempel: <strong>mistral-large</strong>, <strong>mistral-small</strong>, osv. Se Mistral\'s dokumentation for tilgængelige modeller.';
 $string['ollama_chat_model'] = 'Ollama Chat Model';
 $string['ollama_chat_model_help'] = 'Her kan du angive den chat-model, der skal bruges. For eksempel: <strong>llama2</strong>, <strong>vicuna</strong>, osv. Se din Ollama\'s provider for tilgængelige modeller.';
+$string['nebius_chat_model'] = 'Nebius Chat Model';
+$string['nebius_chat_model_help'] = 'Her kan du angive den chat-model, der skal bruges. For eksempel: <strong>Qwen/Qwen3-32B-fast</strong>, <strong>Qwen/Qwen3-30B-A3B-Instruct-2507</strong>, osv. Se Nebius\'s dokumentation for tilgængelige modeller.';
 $string['openai_embedding_model'] = 'OpenAI Embedding Model';
 $string['openai_embedding_model_help'] = 'Her kan du angive den embedding-model, der skal bruges. For eksempel: <strong>text-embedding-3-small</strong>, <strong>text-embedding-3-large</strong>, osv. Se OpenAI\'s dokumentation for tilgængelige embedding-modeller.';
 $string['mistral_embedding_model'] = 'Mistral Embedding Model';
 $string['mistral_embedding_model_help'] = 'Her kan du angive den embedding-model, der skal bruges. For eksempel: <strong>mistral-embed</strong>, osv. Se Mistral\'s dokumentation for tilgængelige embedding-modeller.';
 $string['ollama_embedding_model'] = 'Ollama Embedding Model';
 $string['ollama_embedding_model_help'] = 'Her kan du angive den embedding-model, der skal bruges. For eksempel: <strong>nomic-embed-text</strong>, osv. Se din Ollama\'s provider for tilgængelige embedding-modeller.';
+$string['nebius_embedding_model'] = 'Nebius Embedding Model';
+$string['nebius_embedding_model_help'] = 'Her kan du angive den embedding-model, der skal bruges. For eksempel: <strong>Qwen/Qwen3-Embedding-8B</strong>, osv. Se Nebius\'s dokumentation for tilgængelige embedding-modeller.';
 
 // Manage Features
 $string['manage_features:title'] = 'AI Funktioner';

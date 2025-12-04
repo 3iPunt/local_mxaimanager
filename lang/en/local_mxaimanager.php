@@ -26,12 +26,16 @@ $string['mistral_chat_model'] = 'Mistral Chat Model';
 $string['mistral_chat_model_help'] = 'Here you can specify the chat model that should be used. For example: <strong>mistral-large</strong>, <strong>mistral-small</strong>, etc. Refer to Mistral\'s documentation for available models.';
 $string['ollama_chat_model'] = 'Ollama Chat Model';
 $string['ollama_chat_model_help'] = 'Here you can specify the chat model that should be used. For example: <strong>llama2</strong>, <strong>vicuna</strong>, etc. Refer to your Ollama\'s provider for available models.';
+$string['nebius_chat_model'] = 'Nebius Chat Model';
+$string['nebius_chat_model_help'] = 'Here you can specify the chat model that should be used. For example: <strong>Qwen/Qwen3-32B-fast</strong>, <strong>Qwen/Qwen3-30B-A3B-Instruct-2507</strong>, etc. Refer to Nebius\'s documentation for available models.';
 $string['openai_embedding_model'] = 'OpenAI Embedding Model';
 $string['openai_embedding_model_help'] = 'Here you can specify the embedding model that should be used. For example: <strong>text-embedding-3-small</strong>, <strong>text-embedding-3-large</strong>, etc. Refer to OpenAI\'s documentation for available embedding models.';
 $string['mistral_embedding_model'] = 'Mistral Embedding Model';
 $string['mistral_embedding_model_help'] = 'Here you can specify the embedding model that should be used. For example: <strong>mistral-embed</strong>, etc. Refer to Mistral\'s documentation for available embedding models.';
 $string['ollama_embedding_model'] = 'Ollama Embedding Model';
 $string['ollama_embedding_model_help'] = 'Here you can specify the embedding model that should be used. For example: <strong>nomic-embed-text</strong>, etc. Refer to your Ollama\'s provider for available embedding models.';
+$string['nebius_embedding_model'] = 'Nebius Embedding Model';
+$string['nebius_embedding_model_help'] = 'Here you can specify the embedding model that should be used. For example: <strong>Qwen/Qwen3-Embedding-8B</strong>, etc. Refer to Nebius\'s documentation for available embedding models.';
 
 // Manage Features
 $string['manage_features:title'] = 'AI Features';

@@ -80,6 +80,10 @@ class repository extends \local_mxaimanager\app\repository
         );
     }
 
+    /**
+     * @return \local_mxaimanager\app\collection<entity>
+     * @throws \dml_exception
+     */
     public function get_all(): \local_mxaimanager\app\collection
     {
         return $this->base_factory->collection(
