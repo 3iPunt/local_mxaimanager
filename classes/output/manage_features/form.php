@@ -181,7 +181,7 @@ class form extends \moodleform
                     static function (entity $p) use ($unique_provider_class) {
                         return $p->get_classname() !== $unique_provider_class;
                     }
-                )->map(function (entity $provider) {
+                )->map(static function (entity $provider) {
                     return (string)$provider->get_id();
                 })->to_array(true);
                 $provider_ids_of_all_providers_except_this_type[] = '0'; // Also hide if 'default' is selected.

@@ -39,7 +39,7 @@ class default_provider_form extends \moodleform
         }
 
         // Fill in defaults from preconfigured providers if not already set.
-        $preconfigured_providers = $this->base_factory->ai()->provider()->repository()->get_all()->filter(function (\local_mxaimanager\app\ai\provider\entity $provider) {
+        $preconfigured_providers = $this->base_factory->ai()->provider()->repository()->get_all()->filter(static function (\local_mxaimanager\app\ai\provider\entity $provider) {
                 if (!$provider->get_is_preconfigured()) {
                     return false;
                 }
@@ -53,7 +53,7 @@ class default_provider_form extends \moodleform
                 continue;
             }
 
-            $preconfigured_providers_supporting_action = $preconfigured_providers->filter(function (\local_mxaimanager\app\ai\provider\entity $provider) use ($interface) {
+            $preconfigured_providers_supporting_action = $preconfigured_providers->filter(static function (\local_mxaimanager\app\ai\provider\entity $provider) use ($interface) {
                 $classes_implemented = class_implements($provider->get_classname());
 
                 return in_array($interface, $classes_implemented, true);

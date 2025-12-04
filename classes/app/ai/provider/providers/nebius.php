@@ -139,7 +139,7 @@ class nebius extends provider implements interfaces\chat_completion, interfaces\
 
             $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
 
-            $content = $json['choices'][0]['message']['content'] ?? null;
+            $content = $json['choices'][0]['message']['content'] ?? '';
 
             // Remove any <think>...</think> tags from the response. Some Qwen models include their internal reasoning.
             return trim(preg_replace('/<think>.*?<\/think>/s', '', $content));

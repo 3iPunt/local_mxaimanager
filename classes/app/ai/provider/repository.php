@@ -76,7 +76,7 @@ class repository extends \local_mxaimanager\app\repository
                 $this->db->get_records($this->get_table(), ['classname' => $classname])
             )
         );
-        $preconfigured_entities = $this->get_preconfigured_providers()->filter(function ($entity) use ($classname) {
+        $preconfigured_entities = $this->get_preconfigured_providers()->filter(static function (\local_mxaimanager\app\ai\provider\entity $entity) use ($classname) {
             return $entity->get_classname() === $classname;
         });
         return $db_entities->merge($preconfigured_entities);
@@ -100,7 +100,7 @@ class repository extends \local_mxaimanager\app\repository
                 )
             );
         }
-        $preconfigured_entities = $this->get_preconfigured_providers()->filter(function ($entity) use ($classnames) {
+        $preconfigured_entities = $this->get_preconfigured_providers()->filter(static function (\local_mxaimanager\app\ai\provider\entity $entity) use ($classnames) {
             return in_array($entity->get_classname(), $classnames, true);
         });
         return $db_entities->merge($preconfigured_entities);
