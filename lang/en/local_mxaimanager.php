@@ -64,6 +64,7 @@ $string['you_have_configured_a_provider_and_set_the_default'] = 'You have config
 $string['you_have_not_yet_configured_any_providers'] = 'You\'ve not yet configured any AI provider instances. Please add at least one provider <a href="/local/mxaimanager/view.php?view=manage_providers&action=browse">here</a>.';
 $string['you_have_not_yet_configured_default_providers'] = 'You\'ve not yet configured default provider instances for all actions. Please configure default provider instances <a href="/local/mxaimanager/view.php?view=manage_providers&action=browse">here</a>.';
 $string['no_available_providers'] = 'No available provider instances';
+$string['this_provider_is_preconfigured_no_modify'] = 'This provider instance is preconfigured and cannot be modified.';
 
 // Settings
 $string['settings:manage_page'] = 'Manage AI Settings';
