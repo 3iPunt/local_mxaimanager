@@ -69,6 +69,10 @@ class default_provider_form extends \moodleform
 
             $providers_supporting_action_exists = $configured_providers_supporting_action->filter(
                 static function (entity $provider) use ($data, $interface) {
+                    if (!isset($data[$interface])) {
+                        return false;
+                    }
+
                     return $provider->get_id() === (int)$data[$interface];
                 }
             )->not_empty();
