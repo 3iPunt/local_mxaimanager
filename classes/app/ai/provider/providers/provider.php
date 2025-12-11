@@ -38,7 +38,9 @@ abstract class provider
     /**
      * Define the form elements available for configuration of this action on this provider.
      *  This method should add the elements using the provided MoodleQuickForm instance and prefix the element names
-     *  with the provided prefix to avoid name collisions with other providers.
+     *  with the provided prefix to avoid name collisions with other providers. You should also make sure to add an
+     *  attribute 'action' with the action interface name to each element so that the form can hide/show elements
+     *  based on the selected provider instance for each action.
      * @param \MoodleQuickForm $mform The MoodleQuickForm instance to add elements to.
      * @param class-string $interface The interface of the action being configured.
      * @param string $element_name_prefix The prefix to use for the element names.

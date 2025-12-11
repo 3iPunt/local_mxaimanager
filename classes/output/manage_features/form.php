@@ -177,6 +177,10 @@ class form extends \moodleform
                     continue;
                 }
 
+                if ($element->getAttribute('action') !== $action->get_action_interface()) {
+                    continue;
+                }
+
                 $provider_ids_of_all_providers_except_this_type = $providers->filter(
                     static function (entity $p) use ($unique_provider_class) {
                         return $p->get_classname() !== $unique_provider_class;
