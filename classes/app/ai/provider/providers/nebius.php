@@ -5,14 +5,13 @@ namespace local_mxaimanager\app\ai\provider\providers;
 
 // @codeCoverageIgnoreStart
 defined('MOODLE_INTERNAL') || die();
-
 // @codeCoverageIgnoreEnd
 
 use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_response;
 use local_mxaimanager\app\factory as base_factory;
 
-class ollama extends provider implements interfaces\chat_completion, interfaces\create_embedding
+class nebius extends provider implements interfaces\chat_completion, interfaces\create_embedding
 {
     private \curl $curl;
     private string $base_url;
@@ -32,7 +31,7 @@ class ollama extends provider implements interfaces\chat_completion, interfaces\
         $this->embedding_model = $json_config['embedding_model'] ?? '';
 
         if (empty($this->base_url) || empty($this->api_key)) {
-            throw new invalid_provider_instance_configuration('Ollama is missing base url and/or api key');
+            throw new invalid_provider_instance_configuration('Nebius is missing base url and/or api key');
         }
 
         $this->curl = $this->base_factory->curl();
@@ -53,7 +52,7 @@ class ollama extends provider implements interfaces\chat_completion, interfaces\
             ]
         );
         $mform->setType("{$element_name_prefix}chat_model", PARAM_TEXT);
-        $mform->addHelpButton("{$element_name_prefix}chat_model", 'ollama_chat_model', 'local_mxaimanager');
+        $mform->addHelpButton("{$element_name_prefix}chat_model", 'nebius_chat_model', 'local_mxaimanager');
     }
 
     private static function add_embedding_model_field(\MoodleQuickForm $mform, string $element_name_prefix): void
@@ -67,7 +66,7 @@ class ollama extends provider implements interfaces\chat_completion, interfaces\
             ]
         );
         $mform->setType("{$element_name_prefix}embedding_model", PARAM_TEXT);
-        $mform->addHelpButton("{$element_name_prefix}embedding_model", 'ollama_embedding_model', 'local_mxaimanager');
+        $mform->addHelpButton("{$element_name_prefix}embedding_model", 'nebius_embedding_model', 'local_mxaimanager');
     }
 
     public static function moodleform_definition(\MoodleQuickForm $mform, string $element_name_prefix): void
@@ -75,7 +74,7 @@ class ollama extends provider implements interfaces\chat_completion, interfaces\
         // Add base_url field
         $mform->addElement('text', "{$element_name_prefix}base_url", get_string('base_url', 'local_mxaimanager'));
         $mform->setType("{$element_name_prefix}base_url", PARAM_URL);
-        $mform->setDefault("{$element_name_prefix}base_url", '');
+        $mform->setDefault("{$element_name_prefix}base_url", 'https://api.tokenfactory.nebius.com');
 
         // Add api_key field
         $mform->addElement('text', "{$element_name_prefix}api_key", get_string('api_key', 'local_mxaimanager'));
@@ -139,18 +138,20 @@ class ollama extends provider implements interfaces\chat_completion, interfaces\
         }
 
         try {
-            $response = $this->curl->post("{$this->base_url}/api/chat", json_encode([
+            $response = $this->curl->post("{$this->base_url}/v1/chat/completions", json_encode([
                 'model' => $this->chat_model,
-                'stream' => false,
                 'messages' => $messages,
             ], JSON_THROW_ON_ERROR));
 
             $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
 
-            return $json['message']['content'];
+            $content = $json['choices'][0]['message']['content'] ?? '';
+
+            // Remove any <think>...</think> tags from the response. Some Qwen models include their internal reasoning.
+            return trim(preg_replace('/<think>.*?<\/think>/s', '', $content));
         } catch (\Throwable $t) {
             throw new invalid_provider_instance_response(
-                'Invalid response from Ollama: ' . $t->getMessage(),
+                'Invalid response from Nebius: ' . $t->getMessage(),
                 previous: $t
             );
         }
@@ -167,20 +168,18 @@ class ollama extends provider implements interfaces\chat_completion, interfaces\
         }
 
         try {
-            $response = $this->curl->post("{$this->base_url}/api/embed", json_encode([
+            $response = $this->curl->post("{$this->base_url}/v1/embeddings", json_encode([
                 'model' => $this->embedding_model,
                 'input' => $input,
-                "options" => [
-                    'dimensions' => $dimension
-                ]
+                'dimensions' => $dimension
             ], JSON_THROW_ON_ERROR));
 
             $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
 
-            return $json['embeddings'][0];
+            return $json['data'][0]['embedding'];
         } catch (\Throwable $t) {
             throw new invalid_provider_instance_response(
-                'Invalid response from Ollama: ' . $t->getMessage(),
+                'Invalid response from Nebius: ' . $t->getMessage(),
                 previous: $t
             );
         }

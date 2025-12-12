@@ -21,6 +21,7 @@ use local_mxaimanager\app\ai\feature\provider_resolver;
 use local_mxaimanager\app\ai\provider\entity as provider_entity;
 use local_mxaimanager\app\ai\provider\factory as provider_factory;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
+use local_mxaimanager\app\collection;
 use local_mxaimanager\app\factory as base_factory;
 
 class provider_resolver_test extends base_testcase
@@ -62,6 +63,9 @@ class provider_resolver_test extends base_testcase
             ->willReturn(10);
 
         // Set up factory chains
+        $provider_factory_mock = $this->createMock(provider_factory::class);
+        $provider_repository_mock = $this->createMock(\local_mxaimanager\app\ai\provider\repository::class);
+
         $base_factory_mock
             ->method('ai')
             ->willReturn($ai_factory_mock);
@@ -141,6 +145,8 @@ class provider_resolver_test extends base_testcase
         $feature_factory_mock = $this->createMock(feature_factory::class);
         $feature_action_factory_mock = $this->createMock(feature_action_factory::class);
         $feature_action_repository_mock = $this->createMock(\local_mxaimanager\app\ai\feature\action\repository::class);
+        $provider_factory_mock = $this->createMock(provider_factory::class);
+        $provider_repository_mock = $this->createMock(\local_mxaimanager\app\ai\provider\repository::class);
         $provider_factory_mock = $this->createMock(provider_factory::class);
         $provider_repository_mock = $this->createMock(\local_mxaimanager\app\ai\provider\repository::class);
 
@@ -329,6 +335,8 @@ class provider_resolver_test extends base_testcase
             \local_mxaimanager\app\ai\default_provider\repository::class
         );
 
+        $provider_repository_mock = $this->createMock(\local_mxaimanager\app\ai\provider\repository::class);
+
         // Set up feature entity
         $feature_entity_mock
             ->method('get_id')
@@ -406,9 +414,11 @@ class provider_resolver_test extends base_testcase
         $feature_action_factory_mock = $this->createMock(feature_action_factory::class);
         $feature_action_repository_mock = $this->createMock(\local_mxaimanager\app\ai\feature\action\repository::class);
         $default_provider_factory_mock = $this->createMock(default_provider_factory::class);
+        $provider_factory_mock = $this->createMock(provider_factory::class);
         $default_provider_repository_mock = $this->createMock(
             \local_mxaimanager\app\ai\default_provider\repository::class
         );
+        $provider_repository_mock = $this->createMock(\local_mxaimanager\app\ai\provider\repository::class);
 
         // Set up feature entity
         $feature_entity_mock
@@ -428,6 +438,10 @@ class provider_resolver_test extends base_testcase
             ->method('default_provider')
             ->willReturn($default_provider_factory_mock);
 
+        $ai_factory_mock
+            ->method('provider')
+            ->willReturn($provider_factory_mock);
+
         $feature_factory_mock
             ->method('action')
             ->willReturn($feature_action_factory_mock);
@@ -439,6 +453,17 @@ class provider_resolver_test extends base_testcase
         $default_provider_factory_mock
             ->method('repository')
             ->willReturn($default_provider_repository_mock);
+
+        $provider_factory_mock
+            ->method('repository')
+            ->willReturn($provider_repository_mock);
+
+        // Mock preconfigured providers
+        $collection_mock = $this->createMock(collection::class);
+        $collection_mock->method('empty')->willReturn(true);
+        $collection_mock->method('filter')->willReturnSelf();
+        $collection_mock->method('first')->willReturn(null);
+        $provider_repository_mock->expects($this->once())->method('get_all')->willReturn($collection_mock);
 
         // Mock feature action not found
         $feature_action_repository_mock->expects($this->once())

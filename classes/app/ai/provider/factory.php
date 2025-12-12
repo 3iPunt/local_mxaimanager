@@ -36,6 +36,7 @@ class factory
             \local_mxaimanager\app\ai\provider\providers\openai::class => 'OpenAI',
             \local_mxaimanager\app\ai\provider\providers\mistral::class => 'Mistral',
             \local_mxaimanager\app\ai\provider\providers\ollama::class => 'Ollama',
+            \local_mxaimanager\app\ai\provider\providers\nebius::class => 'Nebius',
         ];
     }
 

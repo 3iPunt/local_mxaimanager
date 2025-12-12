@@ -191,6 +191,10 @@ class manage_providers implements interfaces\view
 
         $provider_entity = $this->base_factory->ai()->provider()->repository()->get_by_id($provider_id);
 
+        if ($provider_entity->get_is_preconfigured()) {
+            throw new \Exception('Preconfigured providers cannot be edited.');
+        }
+
         $form = new \local_mxaimanager\output\manage_providers\form($this->base_factory, $this->url, $provider_entity);
 
         if ($form->is_cancelled()) {

@@ -114,6 +114,9 @@ None
 
 ## Change log
 
+* **1.0.2 (2025120400)**
+    - Added support for predefined AI providers.
+    - Added a nebius AI provider.
 * **1.0.1 (2025111900)**
     - Implemented vector API
 * **1.0.0 (2025100100)**

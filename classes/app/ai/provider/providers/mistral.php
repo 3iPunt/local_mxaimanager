@@ -47,7 +47,10 @@ class mistral extends provider implements interfaces\chat_completion, interfaces
         $mform->addElement(
             'text',
             "{$element_name_prefix}chat_model",
-            get_string('default_chat_model', 'local_mxaimanager')
+            get_string('default_chat_model', 'local_mxaimanager'),
+            [
+                'action' => interfaces\chat_completion::class
+            ]
         );
         $mform->setType("{$element_name_prefix}chat_model", PARAM_TEXT);
         $mform->addHelpButton("{$element_name_prefix}chat_model", 'mistral_chat_model', 'local_mxaimanager');
@@ -58,7 +61,10 @@ class mistral extends provider implements interfaces\chat_completion, interfaces
         $mform->addElement(
             'text',
             "{$element_name_prefix}embedding_model",
-            get_string('default_embedding_model', 'local_mxaimanager')
+            get_string('default_embedding_model', 'local_mxaimanager'),
+            [
+                'action' => interfaces\create_embedding::class
+            ]
         );
         $mform->setType("{$element_name_prefix}embedding_model", PARAM_TEXT);
         $mform->addHelpButton("{$element_name_prefix}embedding_model", 'mistral_embedding_model', 'local_mxaimanager');
