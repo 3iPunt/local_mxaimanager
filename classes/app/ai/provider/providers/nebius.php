@@ -5,6 +5,7 @@ namespace local_mxaimanager\app\ai\provider\providers;
 
 // @codeCoverageIgnoreStart
 defined('MOODLE_INTERNAL') || die();
+
 // @codeCoverageIgnoreEnd
 
 use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
@@ -131,24 +132,46 @@ class nebius extends provider implements interfaces\chat_completion, interfaces\
      * @throws invalid_provider_instance_configuration
      * @throws invalid_provider_instance_response
      */
-    public function chat_completion(array $messages): string
+    public function chat_completion(array $messages, bool $json_mode = false, ?array $json_schema = null): string
     {
         if (empty($this->chat_model)) {
             throw new invalid_provider_instance_configuration('Chat model is not configured');
         }
 
+        $payload = [
+            'model' => $this->chat_model,
+            'messages' => $messages,
+        ];
+
+        if ($json_schema !== null) {
+            $payload['response_format'] = [
+                'type' => 'json_schema',
+                'json_schema' => [
+                    'name' => 'response_schema',
+                    'schema' => $json_schema
+                ],
+            ];
+        } elseif ($json_mode) {
+            $payload['response_format'] = [
+                'type' => 'json_object',
+            ];
+        }
+
         try {
-            $response = $this->curl->post("{$this->base_url}/v1/chat/completions", json_encode([
-                'model' => $this->chat_model,
-                'messages' => $messages,
-            ], JSON_THROW_ON_ERROR));
+            $response = $this->curl->post(
+                "{$this->base_url}/v1/chat/completions",
+                json_encode($payload, JSON_THROW_ON_ERROR)
+            );
 
             $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
 
+            if (!isset($json['choices'][0]['message']['content'])) {
+                throw new \Exception('Missing content in Nebius response. Nebius response: ' . $response);
+            }
+
             $content = $json['choices'][0]['message']['content'] ?? '';
 
-            // Remove any <think>...</think> tags from the response. Some Qwen models include their internal reasoning.
-            return trim(preg_replace('/<think>.*?<\/think>/s', '', $content));
+            return $content;
         } catch (\Throwable $t) {
             throw new invalid_provider_instance_response(
                 'Invalid response from Nebius: ' . $t->getMessage(),

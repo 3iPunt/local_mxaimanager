@@ -15,9 +15,11 @@ interface chat_completion
 {
     /**
      * @param message[] $messages
+     * @param bool $json_mode Whether to enable JSON mode (forces the response to be valid JSON).
+     * @param array|null $json_schema Optional JSON schema to enforce structured output (implies JSON mode).
      * @return string
      * @throws invalid_provider_instance_configuration
      * @throws invalid_provider_instance_response
      */
-    public function chat_completion(array $messages): string;
+    public function chat_completion(array $messages, bool $json_mode = false, ?array $json_schema = null): string;
 }

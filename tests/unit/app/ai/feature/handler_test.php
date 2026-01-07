@@ -37,6 +37,8 @@ class handler_test extends base_testcase
             ->method('chat_completion')
             ->with(
                 $this->equalTo([['role' => 'user', 'content' => 'Test']]),
+                $this->equalTo(false),
+                $this->equalTo(null),
                 $this->equalTo(1),
                 $this->equalTo(['key' => 'value'])
             )

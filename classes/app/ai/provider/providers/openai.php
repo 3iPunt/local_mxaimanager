@@ -132,19 +132,42 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
      * @throws invalid_provider_instance_configuration
      * @throws invalid_provider_instance_response
      */
-    public function chat_completion(array $messages): string
+    public function chat_completion(array $messages, bool $json_mode = false, ?array $json_schema = null): string
     {
         if (empty($this->chat_model)) {
             throw new invalid_provider_instance_configuration('Chat model is not configured');
         }
 
+        $payload = [
+            'model' => $this->chat_model,
+            'messages' => $messages,
+        ];
+
+        if ($json_schema !== null) {
+            $payload['response_format'] = [
+                'type' => 'json_schema',
+                'json_schema' => [
+                    'name' => 'response_schema',
+                    'schema' => $json_schema
+                ],
+            ];
+        } elseif ($json_mode) {
+            $payload['response_format'] = [
+                'type' => 'json_object',
+            ];
+        }
+
         try {
-            $response = $this->curl->post("{$this->base_url}/v1/chat/completions", json_encode([
-                'model' => $this->chat_model,
-                'messages' => $messages,
-            ], JSON_THROW_ON_ERROR));
+            $response = $this->curl->post(
+                "{$this->base_url}/v1/chat/completions",
+                json_encode($payload, JSON_THROW_ON_ERROR)
+            );
 
             $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+
+            if (!isset($json['choices'][0]['message']['content'])) {
+                throw new \Exception('Missing content in OpenAI response. OpenAI response: ' . $response);
+            }
 
             return $json['choices'][0]['message']['content'];
         } catch (\Throwable $t) {
