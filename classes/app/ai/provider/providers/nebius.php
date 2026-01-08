@@ -169,9 +169,7 @@ class nebius extends provider implements interfaces\chat_completion, interfaces\
                 throw new \Exception('Missing content in Nebius response. Nebius response: ' . $response);
             }
 
-            $content = $json['choices'][0]['message']['content'] ?? '';
-
-            return $content;
+            return $json['choices'][0]['message']['content'];
         } catch (\Throwable $t) {
             throw new invalid_provider_instance_response(
                 'Invalid response from Nebius: ' . $t->getMessage(),
