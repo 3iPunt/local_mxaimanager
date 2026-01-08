@@ -145,10 +145,7 @@ class ollama extends provider implements interfaces\chat_completion, interfaces\
         ];
 
         if ($json_schema !== null) {
-            $payload['format'] = [
-                'name' => 'response_schema',
-                'schema' => $json_schema
-            ];
+            $payload['format'] = $json_schema;
         } elseif ($json_mode) {
             $payload['format'] = 'json';
         }
