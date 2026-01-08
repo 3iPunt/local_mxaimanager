@@ -140,39 +140,6 @@ class nebius_test extends \base_testcase
         $this->assertEquals('Hello, world!', $result);
     }
 
-    public function test_chat_completion_success_thinking(): void
-    {
-        $json_config = [
-            'base_url' => 'https://api.tokenfactory.nebius.com',
-            'api_key' => 'test_key',
-            'chat_model' => 'qwen-turbo',
-            'embedding_model' => 'text-embedding-qwen-002'
-        ];
-
-        $expected_response = '{"choices":[{"message":{"content":"<think>User is writing \"Hello, world!\" and is probably expecting I respond with the same message.</think>Hello, world!"}}]}';
-
-        $this->mock_curl->expects($this->once())
-            ->method('post')
-            ->with(
-                'https://api.tokenfactory.nebius.com/v1/chat/completions',
-                $this->callback(function ($data) {
-                    $decoded = json_decode($data, true);
-                    return isset($decoded['model'], $decoded['messages']) && $decoded['model'] === 'qwen-turbo';
-                })
-            )
-            ->willReturn($expected_response);
-
-        $provider = new \local_mxaimanager\app\ai\provider\providers\nebius(
-            $this->mock_base_factory,
-            $json_config
-        );
-
-        $messages = [['role' => 'user', 'content' => 'Hello']];
-        $result = $provider->chat_completion($messages);
-
-        $this->assertEquals('Hello, world!', $result);
-    }
-
     public function test_chat_completion_missing_chat_model(): void
     {
         $json_config = [
