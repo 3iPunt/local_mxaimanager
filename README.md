@@ -114,6 +114,8 @@ None
 
 ## Change log
 
+* **1.0.3 (2026010800)**
+    - Added support for JSON schema validation for AI provider responses.
 * **1.0.2 (2025120400)**
     - Added support for predefined AI providers.
     - Added a nebius AI provider.
