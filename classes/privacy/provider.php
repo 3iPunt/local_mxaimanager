@@ -93,10 +93,13 @@ class provider implements
             return;
         }
 
+        [$in_sql, $in_params] = $DB->get_in_or_equal($userids);
+
         // Delete all records for the specified users.
         $DB->delete_records_select(
             'local_mxaimanager_feature_action_usage_logs',
-            'user_id IN (' . implode(',', array_map('intval', $userids)) . ')'
+            'user_id ' . $in_sql,
+            $in_params
         );
     }
 
@@ -122,10 +125,16 @@ class provider implements
 
     public static function get_users_in_context(\core_privacy\local\request\userlist $userlist): void
     {
-        global $DB;
-        $userids = $DB->get_fieldset_sql("SELECT DISTINCT user_id FROM {local_mxaimanager_feature_action_usage_logs}");
-        foreach ($userids as $userid) {
-            $userlist->add_user($userid);
+        $context = $userlist->get_context();
+
+        if (!$context instanceof \context_user) {
+            return;
         }
+
+        $sql = "SELECT user_id
+                  FROM {local_mxaimanager_feature_action_usage_logs}
+                 WHERE user_id = ?";
+        $params = [$context->instanceid];
+        $userlist->add_from_sql('user_id', $sql, $params);
     }
 }

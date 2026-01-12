@@ -76,10 +76,10 @@ class provider_test extends \advanced_testcase
         provider::get_users_in_context($userlist);
 
         $this->assertEqualsCanonicalizing(
-            [$this->user1->id, $this->user2->id],
+            [$this->user1->id],
             $userlist->get_userids()
         );
-        $this->assertCount(2, $userlist->get_userids());
+        $this->assertCount(1, $userlist->get_userids());
     }
 
     public function test_get_contexts_for_userid(): void
