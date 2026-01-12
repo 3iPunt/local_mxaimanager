@@ -84,5 +84,36 @@
                 <INDEX NAME="provider_id" UNIQUE="false" FIELDS="provider_id"/>
             </INDEXES>
         </TABLE>
+        <TABLE NAME="local_mxaimanager_feature_action_usage_logs"
+               COMMENT="Table for logging usage of AI feature actions, including requests, responses, token input/output, timestamps and session ids">
+            <FIELDS>
+                <FIELD NAME="id" SEQUENCE="true" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="ID of the record"/>
+                <FIELD NAME="feature_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
+                       COMMENT="ID of the feature"/>
+                <FIELD NAME="request_json" SEQUENCE="false" TYPE="text" NOTNULL="true"
+                       COMMENT="JSON request sent to the AI provider"/>
+                <FIELD NAME="response_json" SEQUENCE="false" TYPE="text" NOTNULL="true"
+                       COMMENT="JSON response received from the AI provider"/>
+                <FIELD NAME="input_tokens" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
+                       COMMENT="Number of input tokens used"/>
+                <FIELD NAME="output_tokens" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
+                       COMMENT="Number of output tokens generated"/>
+                <FIELD NAME="session_id" SEQUENCE="false" TYPE="char" LENGTH="255" NOTNULL="true"
+                       COMMENT="Session identifier for grouping related requests"/>
+                <FIELD NAME="user_id" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
+                       COMMENT="ID of the user making the request"/>
+                <FIELD NAME="timecreated" SEQUENCE="false" TYPE="int" LENGTH="10" NOTNULL="true"
+                       COMMENT="Timestamp when the log entry was created"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="feature_id" UNIQUE="false" FIELDS="feature_id"/>
+                <INDEX NAME="feature_id_timecreated" UNIQUE="false" FIELDS="feature_id,timecreated"/>
+                <INDEX NAME="session_id" UNIQUE="false" FIELDS="session_id"/>
+                <INDEX NAME="user_id" UNIQUE="false" FIELDS="user_id"/>
+            </INDEXES>
+        </TABLE>
     </TABLES>
 </XMLDB>

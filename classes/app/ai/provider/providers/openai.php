@@ -8,6 +8,7 @@ defined('MOODLE_INTERNAL') || die();
 
 // @codeCoverageIgnoreEnd
 
+use local_mxaimanager\app\ai\provider\chat_completion_request;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_response;
 use local_mxaimanager\app\factory as base_factory;
@@ -132,8 +133,11 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
      * @throws invalid_provider_instance_configuration
      * @throws invalid_provider_instance_response
      */
-    public function chat_completion(array $messages, bool $json_mode = false, ?array $json_schema = null): string
-    {
+    public function chat_completion(
+        array $messages,
+        bool $json_mode = false,
+        ?array $json_schema = null
+    ): chat_completion_request {
         if (empty($this->chat_model)) {
             throw new invalid_provider_instance_configuration('Chat model is not configured');
         }
@@ -169,7 +173,13 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
                 throw new \Exception('Missing content in OpenAI response. OpenAI response: ' . $response);
             }
 
-            return $json['choices'][0]['message']['content'];
+            return new chat_completion_request(
+                $payload,
+                $json,
+                $json['choices'][0]['message']['content'],
+                $json['usage']['prompt_tokens'],
+                $json['usage']['completion_tokens']
+            );
         } catch (\Throwable $t) {
             throw new invalid_provider_instance_response(
                 'Invalid response from OpenAI: ' . $t->getMessage(),

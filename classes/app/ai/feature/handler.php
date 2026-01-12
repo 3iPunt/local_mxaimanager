@@ -21,11 +21,16 @@ class handler
     private base_factory $base_factory;
     private provider_resolver $provider_resolver;
     private action_handler $action_handler;
+    private entity $feature;
 
     public function __construct(base_factory $base_factory, entity $feature)
     {
         $this->base_factory = $base_factory;
-        $this->provider_resolver = $this->base_factory->ai()->feature()->provider_resolver($base_factory, $feature);
+        $this->feature = $feature;
+        $this->provider_resolver = $this->base_factory->ai()->feature()->provider_resolver(
+            $base_factory,
+            $this->feature
+        );
         $this->action_handler = $this->base_factory->ai()->feature()->action_handler($base_factory);
     }
 
@@ -45,7 +50,14 @@ class handler
             \local_mxaimanager\app\ai\provider\providers\interfaces\chat_completion::class
         );
 
-        return $this->action_handler->chat_completion($messages, $json_mode, $json_schema, $provider_id, $config_json);
+        return $this->action_handler->chat_completion(
+            $this->feature,
+            $messages,
+            $json_mode,
+            $json_schema,
+            $provider_id,
+            $config_json
+        );
     }
 
     /**

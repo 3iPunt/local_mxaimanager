@@ -54,6 +54,7 @@ class action_handler
      * @throws invalid_provider_instance_response
      */
     public function chat_completion(
+        entity $feature,
         array $messages,
         bool $json_mode,
         ?array $json_schema,
@@ -73,7 +74,23 @@ class action_handler
             );
         }
 
-        return $handler->chat_completion($messages, $json_mode, $json_schema);
+        // Make the chat completion request.
+        $chat_completion_request = $handler->chat_completion($messages, $json_mode, $json_schema);
+
+        // Log the request and response.
+        $this->base_factory->db()->insert_record('local_mxaimanager_feature_action_usage_logs', [
+            'feature_id' => $feature->get_id(),
+            'request_json' => json_encode($chat_completion_request->get_request_json(), JSON_THROW_ON_ERROR),
+            'response_json' => json_encode($chat_completion_request->get_response_json(), JSON_THROW_ON_ERROR),
+            'input_tokens' => $chat_completion_request->get_input_tokens(),
+            'output_tokens' => $chat_completion_request->get_output_tokens(),
+            'session_id' => session_id(),
+            'user_id' => $this->base_factory->user()->id,
+            'timecreated' => time(),
+        ]);
+
+        // Return the response.
+        return $chat_completion_request->get_response();
     }
 
     /**

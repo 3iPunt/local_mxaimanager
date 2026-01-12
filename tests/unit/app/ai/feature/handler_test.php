@@ -36,6 +36,7 @@ class handler_test extends base_testcase
         $action_handler_mock->expects($this->once())
             ->method('chat_completion')
             ->with(
+                $this->isInstanceOf(entity::class),
                 $this->equalTo([['role' => 'user', 'content' => 'Test']]),
                 $this->equalTo(false),
                 $this->equalTo(null),

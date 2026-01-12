@@ -8,6 +8,7 @@ defined('MOODLE_INTERNAL') || die();
 
 // @codeCoverageIgnoreEnd
 
+use local_mxaimanager\app\ai\provider\chat_completion_request;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_response;
 use local_mxaimanager\app\factory as base_factory;
@@ -132,8 +133,11 @@ class ollama extends provider implements interfaces\chat_completion, interfaces\
      * @throws invalid_provider_instance_configuration
      * @throws invalid_provider_instance_response
      */
-    public function chat_completion(array $messages, bool $json_mode = false, ?array $json_schema = null): string
-    {
+    public function chat_completion(
+        array $messages,
+        bool $json_mode = false,
+        ?array $json_schema = null
+    ): chat_completion_request {
         if (empty($this->chat_model)) {
             throw new invalid_provider_instance_configuration('Chat model is not configured');
         }
@@ -159,7 +163,13 @@ class ollama extends provider implements interfaces\chat_completion, interfaces\
                 throw new \Exception('Missing content in Ollama response. Ollama response: ' . $response);
             }
 
-            return $json['message']['content'];
+            return new chat_completion_request(
+                $payload,
+                $json,
+                $json['message']['content'],
+                $json['prompt-eval-count'],
+                $json['eval-count']
+            );
         } catch (\Throwable $t) {
             throw new invalid_provider_instance_response(
                 'Invalid response from Ollama: ' . $t->getMessage(),
