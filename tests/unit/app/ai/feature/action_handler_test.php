@@ -66,7 +66,7 @@ class action_handler_test extends base_testcase
             new message('assistant', 'Hi there')
         ];
 
-        $result = $handler->chat_completion($messages, 1, ['api_key' => 'test']);
+        $result = $handler->chat_completion($messages, false, null, 1, ['api_key' => 'test']);
 
         // Assert
         $this->assertEquals('Response from AI', $result);
@@ -97,7 +97,7 @@ class action_handler_test extends base_testcase
         $this->expectException(invalid_provider_instance_configuration::class);
         $this->expectExceptionMessage('Provider instance ID: 2 does not support chat completion');
 
-        $handler->chat_completion($messages, 2, ['api_key' => 'test']);
+        $handler->chat_completion($messages, false, null, 2, ['api_key' => 'test']);
     }
 
     public function test_create_embedding_success(): void

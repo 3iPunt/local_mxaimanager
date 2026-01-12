@@ -132,20 +132,32 @@ class ollama extends provider implements interfaces\chat_completion, interfaces\
      * @throws invalid_provider_instance_configuration
      * @throws invalid_provider_instance_response
      */
-    public function chat_completion(array $messages): string
+    public function chat_completion(array $messages, bool $json_mode = false, ?array $json_schema = null): string
     {
         if (empty($this->chat_model)) {
             throw new invalid_provider_instance_configuration('Chat model is not configured');
         }
 
+        $payload = [
+            'model' => $this->chat_model,
+            'stream' => false,
+            'messages' => $messages,
+        ];
+
+        if ($json_schema !== null) {
+            $payload['format'] = $json_schema;
+        } elseif ($json_mode) {
+            $payload['format'] = 'json';
+        }
+
         try {
-            $response = $this->curl->post("{$this->base_url}/api/chat", json_encode([
-                'model' => $this->chat_model,
-                'stream' => false,
-                'messages' => $messages,
-            ], JSON_THROW_ON_ERROR));
+            $response = $this->curl->post("{$this->base_url}/api/chat", json_encode($payload, JSON_THROW_ON_ERROR));
 
             $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+
+            if (!isset($json['message']['content'])) {
+                throw new \Exception('Missing content in Ollama response. Ollama response: ' . $response);
+            }
 
             return $json['message']['content'];
         } catch (\Throwable $t) {

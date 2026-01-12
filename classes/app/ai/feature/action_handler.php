@@ -45,14 +45,21 @@ class action_handler
 
     /**
      * @param message[] $messages
+     * @param bool $json_mode Whether to enable JSON mode (forces the response to be valid JSON).
+     * @param array|null $json_schema Optional JSON schema to enforce structured output (implies JSON mode).
      * @param int $provider_id
      * @param array $config_json
      * @return string
      * @throws invalid_provider_instance_configuration
      * @throws invalid_provider_instance_response
      */
-    public function chat_completion(array $messages, int $provider_id, array $config_json): string
-    {
+    public function chat_completion(
+        array $messages,
+        bool $json_mode,
+        ?array $json_schema,
+        int $provider_id,
+        array $config_json
+    ): string {
         // Get the provider handler.
         $handler = $this->get_provider_handler_provider_and_settings_json(
             $provider_id,
@@ -66,7 +73,7 @@ class action_handler
             );
         }
 
-        return $handler->chat_completion($messages);
+        return $handler->chat_completion($messages, $json_mode, $json_schema);
     }
 
     /**

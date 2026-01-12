@@ -31,19 +31,21 @@ class handler
 
     /**
      * @param message[] $messages
+     * @param bool $json_mode Whether to enable JSON mode (forces the response to be valid JSON).
+     * @param array|null $json_schema Optional JSON schema to enforce structured output (implies JSON mode).
      * @return string
      * @throws invalid_provider_instance_configuration
      * @throws invalid_provider_instance_response
      * @throws no_provider_instance_configured
      */
-    public function chat_completion(array $messages): string
+    public function chat_completion(array $messages, bool $json_mode = false, ?array $json_schema = null): string
     {
         // Get provider_id and settings_json for the action.
         [$provider_id, $config_json] = $this->provider_resolver->get_provider_and_config(
             \local_mxaimanager\app\ai\provider\providers\interfaces\chat_completion::class
         );
 
-        return $this->action_handler->chat_completion($messages, $provider_id, $config_json);
+        return $this->action_handler->chat_completion($messages, $json_mode, $json_schema, $provider_id, $config_json);
     }
 
     /**
