@@ -70,4 +70,13 @@ $string['this_provider_is_preconfigured_no_modify'] = 'Denne provider instans er
 $string['settings:manage_page'] = 'Administrer AI Indstillinger';
 
 // Privacy
-$string['privacy:metadata'] = 'local_mxaimanager har ingen brugerdata';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs'] = 'Denne tabel gemmer logfiler over brugen af funktionshandlinger for Moxis AI Manager-pluginet.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:id'] = 'ID';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:feature_id'] = 'AI Funktions ID';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:request_json'] = 'Forespørgsels JSON sendt til AI provideren.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:response_json'] = 'Respons JSON modtaget fra AI provideren.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:input_tokens'] = 'Antallet af input tokens brugt i forespørgslen.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:output_tokens'] = 'Antallet af output tokens modtaget i responsen.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:session_id'] = 'Brugersessions ID forbundet med forespørgslen.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:user_id'] = 'Brugers ID, der foretog forespørgslen.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:timecreated'] = 'Tidsstempel for, hvornår logposten blev oprettet.';

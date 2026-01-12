@@ -70,4 +70,13 @@ $string['this_provider_is_preconfigured_no_modify'] = 'This provider instance is
 $string['settings:manage_page'] = 'Manage AI Settings';
 
 // Privacy
-$string['privacy:metadata'] = 'local_mxaimanager has no userdata';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs'] = 'This table stores logs of feature action usage for the Moxis AI Manager plugin.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:id'] = 'ID';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:feature_id'] = 'The ID of the AI feature that was used.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:request_json'] = 'The JSON request sent to the AI provider.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:response_json'] = 'The JSON response received from the AI provider.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:input_tokens'] = 'The number of input tokens used in the request.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:output_tokens'] = 'The number of output tokens received in the response.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:session_id'] = 'The session ID associated with the request.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:user_id'] = 'The ID of the user who made the request.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:timecreated'] = 'The timestamp when the log entry was created.';
