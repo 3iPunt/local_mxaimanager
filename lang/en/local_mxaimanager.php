@@ -36,6 +36,10 @@ $string['ollama_embedding_model'] = 'Ollama Embedding Model';
 $string['ollama_embedding_model_help'] = 'Here you can specify the embedding model that should be used. For example: <strong>nomic-embed-text</strong>, etc. Refer to your Ollama\'s provider for available embedding models.';
 $string['nebius_embedding_model'] = 'Nebius Embedding Model';
 $string['nebius_embedding_model_help'] = 'Here you can specify the embedding model that should be used. For example: <strong>Qwen/Qwen3-Embedding-8B</strong>, etc. Refer to Nebius\'s documentation for available embedding models.';
+$string['openai_image_model'] = 'OpenAI Image Model';
+$string['openai_image_model_help'] = 'Here you can specify the image generation model that should be used. For example: <strong>dall-e-3</strong>, <strong>dall-e-2</strong>, etc. Refer to OpenAI\'s documentation for available image generation models.';
+$string['nebius_image_model'] = 'Nebius Image Model';
+$string['nebius_image_model_help'] = 'Here you can specify the image generation model that should be used. For example: <strong>black-forest-labs/flux-dev</strong>. Refer to Nebius\'s documentation for available image generation models.';
 
 // Manage Features
 $string['manage_features:title'] = 'AI Features';
@@ -49,14 +53,17 @@ $string['manage_features:form:provider_id'] = 'Provider Instance';
 $string['here_you_can_see_all_components_ai_features'] = 'Here you can see all components\' AI features that are available on your site. You can override the default provider instance and/or settings for each feature.';
 $string['uses_chat'] = 'Chat';
 $string['uses_embedding'] = 'Embeddings';
+$string['uses_image'] = 'Image';
 
 $string['base_url'] = 'Base URL';
 $string['api_key'] = 'API Key';
 $string['default_chat_model'] = 'Default Chat Model';
 $string['default_embedding_model'] = 'Default Embedding Model';
+$string['default_image_model'] = 'Default Image Model';
 $string['provider_settings'] = 'Provider Settings';
 $string['supports_chat'] = 'Supports Chat';
 $string['supports_embedding'] = 'Supports Embedding';
+$string['supports_image'] = 'Supports Image';
 $string['provider_supports'] = 'Provider Capabilities';
 $string['default_action_providers'] = 'Default Action Provider instances';
 $string['here_you_define_default_action_providers'] = 'Here you define which provider instances should be used by default for each action.';

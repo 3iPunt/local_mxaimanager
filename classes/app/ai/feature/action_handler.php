@@ -11,6 +11,7 @@ defined('MOODLE_INTERNAL') || die();
 use local_mxaimanager\app\ai\provider\message;
 use local_mxaimanager\app\ai\provider\providers\interfaces\chat_completion;
 use local_mxaimanager\app\ai\provider\providers\interfaces\create_embedding;
+use local_mxaimanager\app\ai\provider\providers\interfaces\create_image;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_response;
 use local_mxaimanager\app\factory as base_factory;
@@ -44,6 +45,7 @@ class action_handler
     }
 
     /**
+     * @param entity $feature
      * @param message[] $messages
      * @param bool $json_mode Whether to enable JSON mode (forces the response to be valid JSON).
      * @param array|null $json_schema Optional JSON schema to enforce structured output (implies JSON mode).
@@ -94,6 +96,7 @@ class action_handler
     }
 
     /**
+     * @param entity $feature
      * @param string $input
      * @param int $dimension
      * @param int $provider_id
@@ -102,8 +105,13 @@ class action_handler
      * @throws invalid_provider_instance_configuration
      * @throws invalid_provider_instance_response
      */
-    public function create_embedding(string $input, int $dimension, int $provider_id, array $config_json): array
-    {
+    public function create_embedding(
+        entity $feature,
+        string $input,
+        int $dimension,
+        int $provider_id,
+        array $config_json
+    ): array {
         // Get the provider handler.
         $handler = $this->get_provider_handler_provider_and_settings_json(
             $provider_id,
@@ -117,6 +125,70 @@ class action_handler
             );
         }
 
-        return $handler->get_embedding($input, $dimension);
+        // Make the chat request.
+        $create_embedding_request = $handler->get_embedding($input, $dimension);
+
+        // Log the request and response.
+        $this->base_factory->db()->insert_record('local_mxaimanager_feature_action_usage_logs', [
+            'feature_id' => $feature->get_id(),
+            'request_json' => json_encode($create_embedding_request->get_request_json(), JSON_THROW_ON_ERROR),
+            'response_json' => json_encode($create_embedding_request->get_response_json(), JSON_THROW_ON_ERROR),
+            'input_tokens' => $create_embedding_request->get_input_tokens(),
+            'output_tokens' => $create_embedding_request->get_output_tokens(),
+            'session_id' => session_id(),
+            'user_id' => $this->base_factory->user()->id,
+            'timecreated' => time(),
+        ]);
+
+        // Return the response.
+        return $create_embedding_request->get_response();
+    }
+
+    /**
+     * @param entity $feature
+     * @param string $prompt
+     * @param bool $return_b64 Whether to return the image as a base64 string. Default is false. If false, returns a URL to the image instead.
+     * @param int $provider_id
+     * @param array $config_json
+     * @return string
+     * @throws invalid_provider_instance_configuration
+     * @throws invalid_provider_instance_response
+     */
+    public function create_image(
+        entity $feature,
+        string $prompt,
+        bool $return_b64,
+        int $provider_id,
+        array $config_json
+    ): string {
+        // Get the provider handler.
+        $handler = $this->get_provider_handler_provider_and_settings_json(
+            $provider_id,
+            $config_json
+        );
+
+        // Validate interface.
+        if (!($handler instanceof create_image)) {
+            throw new invalid_provider_instance_configuration(
+                'Provider instance ID: ' . $provider_id . ' does not support image creation'
+            );
+        }
+
+        // Make the image creation request.
+        $create_image_request = $handler->create_image($prompt, $return_b64);
+
+        // Log the request and response.
+        $this->base_factory->db()->insert_record('local_mxaimanager_feature_action_usage_logs', [
+            'feature_id' => $feature->get_id(),
+            'request_json' => json_encode($create_image_request->get_request_json(), JSON_THROW_ON_ERROR),
+            'response_json' => json_encode($create_image_request->get_response_json(), JSON_THROW_ON_ERROR),
+            'input_tokens' => $create_image_request->get_input_tokens(),
+            'output_tokens' => $create_image_request->get_output_tokens(),
+            'session_id' => session_id(),
+            'user_id' => $this->base_factory->user()->id,
+            'timecreated' => time(),
+        ]);
+
+        return $create_image_request->get_response();
     }
 }

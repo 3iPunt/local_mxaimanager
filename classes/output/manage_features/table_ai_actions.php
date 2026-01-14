@@ -41,6 +41,11 @@ class table_ai_actions implements \renderable, \core\output\named_templatable
                 $used_interfaces,
                 true
             ),
+            'image' => in_array(
+                \local_mxaimanager\app\ai\provider\providers\interfaces\create_image::class,
+                $used_interfaces,
+                true
+            ),
         ];
     }
 }

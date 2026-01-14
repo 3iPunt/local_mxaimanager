@@ -19,5 +19,14 @@
             {{/embedding}}
             {{#str}}supports_embedding, local_mxaimanager{{/str}}
         </li>
+        <li>
+            {{#image}}
+                <i class="fa fa-square-check"></i>
+            {{/image}}
+            {{^image}}
+                <i class="fa fa-square-o"></i>
+            {{/image}}
+            {{#str}}supports_image, local_mxaimanager{{/str}}
+        </li>
     </ul>
 </div>

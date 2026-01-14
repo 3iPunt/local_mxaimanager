@@ -9,6 +9,7 @@ defined('MOODLE_INTERNAL') || die();
 // @codeCoverageIgnoreEnd
 
 use local_mxaimanager\app\ai\provider\chat_completion_request;
+use local_mxaimanager\app\ai\provider\create_embedding_request;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_response;
 use local_mxaimanager\app\factory as base_factory;
@@ -182,24 +183,36 @@ class ollama extends provider implements interfaces\chat_completion, interfaces\
      * @throws invalid_provider_instance_response
      * @throws invalid_provider_instance_configuration
      */
-    public function get_embedding(string $input, ?int $dimension): array
+    public function get_embedding(string $input, ?int $dimension): create_embedding_request
     {
         if (empty($this->embedding_model)) {
             throw new invalid_provider_instance_configuration('Embedding model is not configured');
         }
 
+        $payload = [
+            'model' => $this->embedding_model,
+            'input' => $input,
+            "options" => [
+                'dimensions' => $dimension
+            ]
+        ];
+
         try {
-            $response = $this->curl->post("{$this->base_url}/api/embed", json_encode([
-                'model' => $this->embedding_model,
-                'input' => $input,
-                "options" => [
-                    'dimensions' => $dimension
-                ]
-            ], JSON_THROW_ON_ERROR));
+            $response = $this->curl->post("{$this->base_url}/api/embed", json_encode($payload, JSON_THROW_ON_ERROR));
 
             $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
 
-            return $json['embeddings'][0];
+            if (!isset($json['embeddings'][0])) {
+                throw new \Exception('Missing embedding data in Ollama response. Ollama response: ' . $response);
+            }
+
+            return new create_embedding_request(
+                $payload,
+                $json,
+                $json['embeddings'][0],
+                $json['prompt_eval_count'],
+                0 // Ollama does not provide completion eval count for embeddings
+            );
         } catch (\Throwable $t) {
             throw new invalid_provider_instance_response(
                 'Invalid response from Ollama: ' . $t->getMessage(),

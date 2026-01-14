@@ -7,6 +7,7 @@ defined('MOODLE_INTERNAL') || die();
 
 // @codeCoverageIgnoreEnd
 
+use local_mxaimanager\app\ai\provider\create_embedding_request;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_response;
 
@@ -15,9 +16,9 @@ interface create_embedding
     /**
      * @param string $input
      * @param ?int $dimension
-     * @return float[]
+     * @return create_embedding_request
      * @throws invalid_provider_instance_configuration
      * @throws invalid_provider_instance_response
      */
-    public function get_embedding(string $input, ?int $dimension): array;
+    public function get_embedding(string $input, ?int $dimension): create_embedding_request;
 }
