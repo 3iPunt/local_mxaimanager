@@ -76,6 +76,9 @@ $string['this_provider_is_preconfigured_no_modify'] = 'This provider instance is
 // Settings
 $string['settings:manage_page'] = 'Manage AI Settings';
 
+// Capabilities
+$string['mxaimanager:manage_configuration'] = 'Manage Moxis AI Manager configuration';
+
 // Privacy
 $string['privacy:metadata:local_mxaimanager_feature_action_usage_logs'] = 'This table stores logs of feature action usage for the Moxis AI Manager plugin.';
 $string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:id'] = 'ID';
