@@ -12,14 +12,14 @@ class create_embedding_request implements \JsonSerializable
 {
     protected array $request_json;
     protected array $response_json;
-    protected string $response;
+    protected array $response;
     protected int $input_tokens;
     protected int $output_tokens;
 
     public function __construct(
         array $request_json,
         array $response_json,
-        string $response,
+        array $response,
         int $input_tokens,
         int $output_tokens
     ) {
@@ -40,7 +40,7 @@ class create_embedding_request implements \JsonSerializable
         return $this->response_json;
     }
 
-    public function get_response(): string
+    public function get_response(): array
     {
         return $this->response;
     }

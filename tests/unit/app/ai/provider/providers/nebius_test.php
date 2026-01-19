@@ -12,6 +12,7 @@ require_once $CFG->libdir . '/formslib.php';
 
 use local_mxaimanager\app\ai\provider\providers\interfaces\chat_completion;
 use local_mxaimanager\app\ai\provider\providers\interfaces\create_embedding;
+use local_mxaimanager\app\ai\provider\providers\interfaces\create_image;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_response;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -218,7 +219,7 @@ class nebius_test extends \base_testcase
             'embedding_model' => 'text-embedding-qwen-002'
         ];
 
-        $expected_response = '{"data":[{"embedding":[0.1, 0.2, 0.3]}]}';
+        $expected_response = '{"data":[{"embedding":[0.1, 0.2, 0.3]}],"usage":{"prompt_tokens":1,"total_tokens":1}}';
 
         $this->mock_curl->expects($this->once())
             ->method('post')
@@ -240,7 +241,7 @@ class nebius_test extends \base_testcase
 
         $result = $provider->get_embedding('test input', null);
 
-        $this->assertEquals([0.1, 0.2, 0.3], $result);
+        $this->assertEquals([0.1, 0.2, 0.3], $result->get_response());
     }
 
     public function test_get_embedding_with_dimension(): void
@@ -252,7 +253,7 @@ class nebius_test extends \base_testcase
             'embedding_model' => 'text-embedding-qwen-002'
         ];
 
-        $expected_response = '{"data":[{"embedding":[0.1, 0.2, 0.3]}]}';
+        $expected_response = '{"data":[{"embedding":[0.1, 0.2, 0.3]}],"usage":{"prompt_tokens":1,"total_tokens":1}}';
 
         $this->mock_curl->expects($this->once())
             ->method('post')
@@ -276,7 +277,7 @@ class nebius_test extends \base_testcase
 
         $result = $provider->get_embedding('test input', 512);
 
-        $this->assertEquals([0.1, 0.2, 0.3], $result);
+        $this->assertEquals([0.1, 0.2, 0.3], $result->get_response());
     }
 
     public function test_get_embedding_missing_embedding_model(): void
@@ -326,8 +327,8 @@ class nebius_test extends \base_testcase
         $mform = $this->createMock(\MoodleQuickForm::class);
 
         // Expectations for all the element additions
-        $mform->expects($this->exactly(4))->method('addElement');
-        $mform->expects($this->exactly(4))->method('setType');
+        $mform->expects($this->exactly(5))->method('addElement');
+        $mform->expects($this->exactly(5))->method('setType');
         $mform->expects($this->exactly(2))->method('setDefault');
 
         $element_name_prefix = 'test_';
@@ -347,7 +348,8 @@ class nebius_test extends \base_testcase
             'prefix_base_url' => 'https://api.tokenfactory.nebius.com',
             'prefix_api_key' => 'test_key',
             'prefix_chat_model' => 'qwen-turbo',
-            'prefix_embedding_model' => 'text-embedding-qwen-002'
+            'prefix_embedding_model' => 'text-embedding-qwen-002',
+            'prefix_image_model' => 'some-image-model'
         ];
 
         $errors = \local_mxaimanager\app\ai\provider\providers\nebius::moodleform_validation(
@@ -461,6 +463,25 @@ class nebius_test extends \base_testcase
         \local_mxaimanager\app\ai\provider\providers\nebius::action_moodleform_definition(
             $mform,
             create_embedding::class,
+            $element_name_prefix
+        );
+
+        // The static method was called successfully if no exception was thrown
+        $this->assertTrue(true);
+    }
+
+    public function test_action_moodleform_definition_create_image(): void
+    {
+        $mform = $this->createMock(\MoodleQuickForm::class);
+
+        $mform->expects($this->once())->method('addElement');
+        $mform->expects($this->once())->method('setType');
+
+        $element_name_prefix = 'test_';
+
+        \local_mxaimanager\app\ai\provider\providers\nebius::action_moodleform_definition(
+            $mform,
+            create_image::class,
             $element_name_prefix
         );
 

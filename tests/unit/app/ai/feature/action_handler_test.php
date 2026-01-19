@@ -11,6 +11,7 @@ use base_testcase;
 use Exception;
 use local_mxaimanager\app\ai\feature\entity;
 use local_mxaimanager\app\ai\provider\chat_completion_request;
+use local_mxaimanager\app\ai\provider\create_embedding_request;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
 use local_mxaimanager\app\factory as base_factory;
 use local_mxaimanager\app\ai\provider\message;
@@ -123,10 +124,38 @@ class action_handler_test extends base_testcase
         $handler_mock->expects($this->once())
             ->method('get_embedding')
             ->with('Hello world', 512)
-            ->willReturn([0.123, -0.456, 0.789]);
+            ->willReturn(
+                new create_embedding_request(
+                    [
+                        'model' => 'embedding-model',
+                        'input' => 'Hello world',
+                        'dimension' => 512
+                    ],
+                    [
+                        "object" => "embedding",
+                        "data" => [
+                            0.123,
+                            -0.456,
+                            0.789
+                        ],
+                        "model" => "embedding-model",
+                        "usage" => [
+                            "prompt_tokens" => 5,
+                            "total_tokens" => 5
+                        ]
+                    ],
+                    [
+                        0.123,
+                        -0.456,
+                        0.789
+                    ],
+                    5,
+                    0
+                )
+            );
 
         // Execute test
-        $result = $handler->create_embedding('Hello world', 512, 3, ['model' => 'embedding-model']);
+        $result = $handler->create_embedding(new entity(), 'Hello world', 512, 3, ['model' => 'embedding-model']);
 
         // Assert
         $this->assertEquals([0.123, -0.456, 0.789], $result);
@@ -155,7 +184,7 @@ class action_handler_test extends base_testcase
         $this->expectException(invalid_provider_instance_configuration::class);
         $this->expectExceptionMessage('Provider instance ID: 4 does not support embedding creation');
 
-        $handler->create_embedding('Hello world', 256, 4, ['model' => 'test']);
+        $handler->create_embedding(new entity(), 'Hello world', 256, 4, ['model' => 'test']);
     }
 
 

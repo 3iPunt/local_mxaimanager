@@ -219,7 +219,7 @@ class ollama_test extends \base_testcase
             'embedding_model' => 'some-embedding-model'
         ];
 
-        $expected_response = '{"embeddings":[[0.1, 0.2, 0.3]]}';
+        $expected_response = '{"embeddings":[[0.1, 0.2, 0.3]],"prompt_eval_count":1}';
 
         $this->mock_curl->expects($this->once())
             ->method('post')
@@ -239,7 +239,7 @@ class ollama_test extends \base_testcase
 
         $result = $provider->get_embedding('test input', null);
 
-        $this->assertEquals([0.1, 0.2, 0.3], $result);
+        $this->assertEquals([0.1, 0.2, 0.3], $result->get_response());
     }
 
     public function test_get_embedding_with_dimension(): void
@@ -251,7 +251,7 @@ class ollama_test extends \base_testcase
             'embedding_model' => 'some-embedding-model'
         ];
 
-        $expected_response = '{"embeddings":[[0.1, 0.2, 0.3]]}';
+        $expected_response = '{"embeddings":[[0.1, 0.2, 0.3]],"prompt_eval_count":1}';
 
         $this->mock_curl->expects($this->once())
             ->method('post')
@@ -271,7 +271,7 @@ class ollama_test extends \base_testcase
 
         $result = $provider->get_embedding('test input', 512);
 
-        $this->assertEquals([0.1, 0.2, 0.3], $result);
+        $this->assertEquals([0.1, 0.2, 0.3], $result->get_response());
     }
 
     public function test_get_embedding_missing_embedding_model(): void
