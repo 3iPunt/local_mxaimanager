@@ -210,6 +210,126 @@ class ollama_test extends \base_testcase
         $provider->chat_completion($messages);
     }
 
+    public function test_chat_completion_with_json_mode(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.ollama.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'some-chat-model',
+            'embedding_model' => 'some-embedding-model'
+        ];
+
+        $expected_response = '{"message":{"content":"{\\"key\\": \\"value\\"}"},"prompt-eval-count": 1,"eval-count": 1}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->with(
+                'https://api.ollama.com/api/chat',
+                $this->callback(function ($data) {
+                    $decoded = json_decode($data, true);
+                    return isset($decoded['model'], $decoded['stream'], $decoded['messages'], $decoded['format']) &&
+                        $decoded['model'] === 'some-chat-model' &&
+                        $decoded['format'] === 'json';
+                })
+            )
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\ollama(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $messages = [['role' => 'user', 'content' => 'Hello']];
+        $result = $provider->chat_completion($messages, true);
+
+        $this->assertEquals('{"key": "value"}', $result->get_response());
+    }
+
+    public function test_chat_completion_with_json_schema(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.ollama.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'some-chat-model',
+            'embedding_model' => 'some-embedding-model'
+        ];
+
+        $json_schema = [
+            'type' => 'object',
+            'properties' => [
+                'name' => ['type' => 'string'],
+                'age' => ['type' => 'integer']
+            ]
+        ];
+
+        $expected_response = '{"message":{"content":"{\\"name\\": \\"John\\", \\"age\\": 30}"},"prompt-eval-count": 1,"eval-count": 1}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->with(
+                'https://api.ollama.com/api/chat',
+                $this->callback(function ($data) use ($json_schema) {
+                    $decoded = json_decode($data, true);
+                    return isset($decoded['model'], $decoded['stream'], $decoded['messages'], $decoded['format']) &&
+                        $decoded['model'] === 'some-chat-model' &&
+                        $decoded['format'] === $json_schema;
+                })
+            )
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\ollama(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $messages = [['role' => 'user', 'content' => 'Hello']];
+        $result = $provider->chat_completion($messages, false, $json_schema);
+
+        $this->assertEquals('{"name": "John", "age": 30}', $result->get_response());
+    }
+
+    public function test_chat_completion_json_mode_and_schema_precedence(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.ollama.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'some-chat-model',
+            'embedding_model' => 'some-embedding-model'
+        ];
+
+        $json_schema = [
+            'type' => 'object',
+            'properties' => [
+                'name' => ['type' => 'string']
+            ]
+        ];
+
+        $expected_response = '{"message":{"content":"{\\"name\\": \\"John\\"}"},"prompt-eval-count": 1,"eval-count": 1}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->with(
+                'https://api.ollama.com/api/chat',
+                $this->callback(function ($data) use ($json_schema) {
+                    $decoded = json_decode($data, true);
+                    return isset($decoded['model'], $decoded['stream'], $decoded['messages'], $decoded['format']) &&
+                        $decoded['model'] === 'some-chat-model' &&
+                        $decoded['format'] === $json_schema;
+                })
+            )
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\ollama(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $messages = [['role' => 'user', 'content' => 'Hello']];
+        $result = $provider->chat_completion($messages, true, $json_schema); // json_schema should take precedence
+
+        $this->assertEquals('{"name": "John"}', $result->get_response());
+    }
+
     public function test_get_embedding_success(): void
     {
         $json_config = [
