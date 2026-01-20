@@ -28,5 +28,14 @@
             {{/image}}
             {{#str}}supports_image, local_mxaimanager{{/str}}
         </li>
+        <li>
+            {{#transcription}}
+                <i class="fa fa-square-check"></i>
+            {{/transcription}}
+            {{^transcription}}
+                <i class="fa fa-square-o"></i>
+            {{/transcription}}
+            {{#str}}supports_audio_transcriptions, local_mxaimanager{{/str}}
+        </li>
     </ul>
 </div>

@@ -49,6 +49,7 @@ class factory
             \local_mxaimanager\app\ai\provider\providers\interfaces\chat_completion::class => 'Chat',
             \local_mxaimanager\app\ai\provider\providers\interfaces\create_embedding::class => 'Embedding',
             \local_mxaimanager\app\ai\provider\providers\interfaces\create_image::class => 'Image',
+            \local_mxaimanager\app\ai\provider\providers\interfaces\create_transcription::class => 'Audio Transcription'
         ];
     }
 

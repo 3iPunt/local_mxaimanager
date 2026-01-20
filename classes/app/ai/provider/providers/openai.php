@@ -10,13 +10,15 @@ defined('MOODLE_INTERNAL') || die();
 
 use local_mxaimanager\app\ai\provider\chat_completion_request;
 use local_mxaimanager\app\ai\provider\create_embedding_request;
+use local_mxaimanager\app\ai\provider\create_transcription_request;
 use local_mxaimanager\app\ai\provider\image_generation_request;
+use local_mxaimanager\app\ai\provider\transcription;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_response;
 use local_mxaimanager\app\factory as base_factory;
 
 class openai extends provider implements interfaces\chat_completion, interfaces\create_embedding,
-                                         interfaces\create_image
+                                         interfaces\create_image, interfaces\create_transcription
 {
     private \curl $curl;
     private string $base_url;
@@ -24,6 +26,7 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
     private string $chat_model;
     private string $embedding_model;
     private string $image_model;
+    private string $transcription_model;
 
     /**
      * @throws invalid_provider_instance_configuration
@@ -36,6 +39,7 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
         $this->chat_model = $json_config['chat_model'] ?? '';
         $this->embedding_model = $json_config['embedding_model'] ?? '';
         $this->image_model = $json_config['image_model'] ?? '';
+        $this->transcription_model = $json_config['transcription_model'] ?? '';
 
         if (empty($this->base_url) || empty($this->api_key)) {
             throw new invalid_provider_instance_configuration('OpenAI is missing base url and/or api key');
@@ -90,6 +94,24 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
         $mform->addHelpButton("{$element_name_prefix}image_model", 'openai_image_model', 'local_mxaimanager');
     }
 
+    private static function add_transcription_model_field(\MoodleQuickForm $mform, string $element_name_prefix): void
+    {
+        $mform->addElement(
+            'text',
+            "{$element_name_prefix}transcription_model",
+            get_string('default_transcription_model', 'local_mxaimanager'),
+            [
+                'action' => interfaces\create_transcription::class
+            ]
+        );
+        $mform->setType("{$element_name_prefix}transcription_model", PARAM_TEXT);
+        $mform->addHelpButton(
+            "{$element_name_prefix}transcription_model",
+            'openai_transcription_model',
+            'local_mxaimanager'
+        );
+    }
+
     public static function moodleform_definition(\MoodleQuickForm $mform, string $element_name_prefix): void
     {
         // Add base_url field
@@ -110,6 +132,9 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
 
         // Add image model field
         self::add_image_model_field($mform, $element_name_prefix);
+
+        // Add transcription model field
+        self::add_transcription_model_field($mform, $element_name_prefix);
     }
 
     public static function moodleform_validation(array $data, string $element_name_prefix): array
@@ -136,6 +161,10 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
             $errors["{$element_name_prefix}image_model"] = get_string('required');
         }
 
+        if (empty($data["{$element_name_prefix}transcription_model"])) {
+            $errors["{$element_name_prefix}transcription_model"] = get_string('required');
+        }
+
         return $errors;
     }
 
@@ -153,6 +182,9 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
                 break;
             case interfaces\create_image::class:
                 self::add_image_model_field($mform, $element_name_prefix);
+                break;
+            case interfaces\create_transcription::class:
+                self::add_transcription_model_field($mform, $element_name_prefix);
                 break;
             default:
         }
@@ -302,6 +334,68 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
                 'Invalid response from OpenAI: ' . $t->getMessage(),
                 previous: $t
             );
+        }
+    }
+
+    /**
+     * @throws invalid_provider_instance_configuration
+     * @throws invalid_provider_instance_response
+     */
+    public function create_transcription(string $audio_filepath): create_transcription_request
+    {
+        if (empty($this->transcription_model)) {
+            throw new invalid_provider_instance_configuration('Transcription model is not configured');
+        }
+
+        $fileData = [
+            'file' => new \CURLFile($audio_filepath, mime_content_type($audio_filepath), basename($audio_filepath)),
+            'model' => $this->transcription_model,
+            'response_format' => 'verbose_json',
+            'timestamp_granularities[]' => 'segment'
+        ];
+
+        // Temporarily remove content type headers for multipart upload
+        $this->curl->resetHeader();
+        $this->curl->setHeader([
+            "Authorization: Bearer {$this->api_key}"
+        ]);
+
+        try {
+            $response = $this->curl->post(
+                "{$this->base_url}/v1/audio/transcriptions",
+                $fileData
+            );
+
+            $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+
+            if (!isset($json['text'])) {
+                throw new \Exception('Missing text in OpenAI transcription response. OpenAI response: ' . $response);
+            }
+
+            $transcription = new transcription(
+                $json['text'],
+                $json['segments'] ?? []
+            );
+
+            return new create_transcription_request(
+                $fileData,
+                $json,
+                $transcription,
+                $json['usage']['prompt_tokens'] ?? 0,
+                $json['usage']['completion_tokens'] ?? 0
+            );
+        } catch (\Throwable $t) {
+            throw new invalid_provider_instance_response(
+                'Invalid response from OpenAI: ' . $t->getMessage(),
+                previous: $t
+            );
+        } finally {
+            // Reset headers back to JSON
+            $this->curl->resetHeader();
+            $this->curl->setHeader([
+                "Authorization: Bearer {$this->api_key}",
+                'Content-Type: application/json'
+            ]);
         }
     }
 }

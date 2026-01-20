@@ -46,6 +46,11 @@ class table_ai_actions implements \renderable, \core\output\named_templatable
                 $used_interfaces,
                 true
             ),
+            'transcription' => in_array(
+                \local_mxaimanager\app\ai\provider\providers\interfaces\create_transcription::class,
+                $used_interfaces,
+                true
+            ),
         ];
     }
 }

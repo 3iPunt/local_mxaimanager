@@ -9,6 +9,8 @@ defined('MOODLE_INTERNAL') || die();
 // @codeCoverageIgnoreEnd
 
 use local_mxaimanager\app\ai\provider\message;
+use local_mxaimanager\app\ai\provider\create_transcription_request;
+use local_mxaimanager\app\ai\provider\transcription;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_response;
 use local_mxaimanager\app\exceptions\no_provider_instance_configured;
@@ -95,6 +97,28 @@ class handler
             $this->feature,
             $prompt,
             $return_b64,
+            $provider_id,
+            $config_json
+        );
+    }
+
+    /**
+     * @param string $audio_filepath
+     * @return transcription
+     * @throws invalid_provider_instance_configuration
+     * @throws invalid_provider_instance_response
+     * @throws no_provider_instance_configured
+     */
+    public function create_transcription(string $audio_filepath): transcription
+    {
+        // Get provider_id and settings_json for the action.
+        [$provider_id, $config_json] = $this->provider_resolver->get_provider_and_config(
+            \local_mxaimanager\app\ai\provider\providers\interfaces\create_transcription::class
+        );
+
+        return $this->action_handler->create_transcription(
+            $this->feature,
+            $audio_filepath,
             $provider_id,
             $config_json
         );

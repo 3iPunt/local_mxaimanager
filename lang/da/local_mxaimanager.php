@@ -40,6 +40,10 @@ $string['openai_image_model'] = 'OpenAI Image Model';
 $string['openai_image_model_help'] = 'Her kan du angive den billedgenereringsmodel, der skal bruges. For eksempel: <strong>dall-e-3</strong>, <strong>dall-e-2</strong>, osv. Se OpenAI\'s dokumentation for tilgængelige billedgenereringsmodeller.';
 $string['nebius_image_model'] = 'Nebius Image Model';
 $string['nebius_image_model_help'] = 'Her kan du angive den billedgenereringsmodel, der skal bruges. For eksempel: <strong>black-forest-labs/flux-dev</strong>. Se Nebius\'s dokumentation for tilgængelige billedgenereringsmodeller.';
+$string['openai_transcription_model'] = 'OpenAI Transcription Model';
+$string['openai_transcription_model_help'] = 'Here you can specify the transcription model that should be used. For example: <strong>whisper-1</strong>. Refer to OpenAI\'s documentation for available transcription models.';
+$string['mistral_transcription_model'] = 'Mistral Transcription Model';
+$string['mistral_transcription_model_help'] = 'Here you can specify the transcription model that should be used. For example: <strong>mistral-whisper</strong>. Refer to Mistral\'s documentation for available transcription models.';
 
 // Manage Features
 $string['manage_features:title'] = 'AI Funktioner';
@@ -54,16 +58,19 @@ $string['here_you_can_see_all_components_ai_features'] = 'Her kan du se alle kom
 $string['uses_chat'] = 'Chat';
 $string['uses_embedding'] = 'Embeddings';
 $string['uses_image'] = 'Image';
+$string['uses_audio_transcriptions'] = 'Audio Transcriptions';
 
 $string['base_url'] = 'Base URL';
 $string['api_key'] = 'API Nøgle';
 $string['default_chat_model'] = 'Standard Chat Model';
 $string['default_embedding_model'] = 'Standard Embedding Model';
 $string['default_image_model'] = 'Standard Billedmodel';
+$string['default_transcription_model'] = 'Standard Transkriptionsmodel';
 $string['provider_settings'] = 'Provider Indstillinger';
 $string['supports_chat'] = 'Understøtter Chat';
 $string['supports_embedding'] = 'Understøtter Embedding';
 $string['supports_image'] = 'Understøtter Billede';
+$string['supports_audio_transcriptions'] = 'Understøtter Audio Transkriptioner';
 $string['provider_supports'] = 'Provider Kapaciteter';
 $string['default_action_providers'] = 'Standard Handling Provider-instanser';
 $string['here_you_define_default_action_providers'] = 'Her definerer du, hvilke provider-instanser der skal bruges som standard for hver handling.';
