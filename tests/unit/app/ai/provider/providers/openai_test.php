@@ -12,6 +12,7 @@ require_once $CFG->libdir . '/formslib.php';
 
 use local_mxaimanager\app\ai\provider\providers\interfaces\chat_completion;
 use local_mxaimanager\app\ai\provider\providers\interfaces\create_embedding;
+use local_mxaimanager\app\ai\provider\providers\interfaces\create_image;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_response;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -33,7 +34,9 @@ class openai_test extends \base_testcase
             'base_url' => 'https://api.openai.com',
             'api_key' => 'test_key',
             'chat_model' => 'gpt-3.5-turbo',
-            'embedding_model' => 'text-embedding-ada-002'
+            'embedding_model' => 'text-embedding-ada-002',
+            'image_model' => 'dall-e-3',
+            'transcription_model' => 'whisper-1'
         ];
 
         $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
@@ -116,7 +119,7 @@ class openai_test extends \base_testcase
             'embedding_model' => 'text-embedding-ada-002'
         ];
 
-        $expected_response = '{"choices":[{"message":{"content":"Hello, world!"}}]}';
+        $expected_response = '{"choices":[{"message":{"content":"Hello, world!"}}], "usage":{"prompt_tokens": 5, "completion_tokens": 5}}';
 
         $this->mock_curl->expects($this->once())
             ->method('post')
@@ -137,7 +140,7 @@ class openai_test extends \base_testcase
         $messages = [['role' => 'user', 'content' => 'Hello']];
         $result = $provider->chat_completion($messages);
 
-        $this->assertEquals('Hello, world!', $result);
+        $this->assertEquals('Hello, world!', $result->get_response());
     }
 
     public function test_chat_completion_missing_chat_model(): void
@@ -209,6 +212,269 @@ class openai_test extends \base_testcase
         $provider->chat_completion($messages);
     }
 
+    public function test_chat_completion_with_json_mode(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.openai.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'gpt-3.5-turbo',
+            'embedding_model' => 'text-embedding-ada-002'
+        ];
+
+        $expected_response = '{"choices":[{"message":{"content":"{\\"key\\": \\"value\\"}"}}], "usage":{"prompt_tokens": 5, "completion_tokens": 5}}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->with(
+                'https://api.openai.com/v1/chat/completions',
+                $this->callback(function ($data) {
+                    $decoded = json_decode($data, true);
+                    return isset($decoded['model'], $decoded['messages'], $decoded['response_format']) &&
+                        $decoded['model'] === 'gpt-3.5-turbo' &&
+                        $decoded['response_format']['type'] === 'json_object';
+                })
+            )
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $messages = [['role' => 'user', 'content' => 'Hello']];
+        $result = $provider->chat_completion($messages, true);
+
+        $this->assertEquals('{"key": "value"}', $result->get_response());
+    }
+
+    public function test_chat_completion_with_json_schema(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.openai.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'gpt-3.5-turbo',
+            'embedding_model' => 'text-embedding-ada-002'
+        ];
+
+        $json_schema = [
+            'type' => 'object',
+            'properties' => [
+                'name' => ['type' => 'string'],
+                'age' => ['type' => 'integer']
+            ]
+        ];
+
+        $expected_response = '{"choices":[{"message":{"content":"{\\"name\\": \\"John\\", \\"age\\": 30}"}}], "usage":{"prompt_tokens": 5, "completion_tokens": 5}}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->with(
+                'https://api.openai.com/v1/chat/completions',
+                $this->callback(function ($data) use ($json_schema) {
+                    $decoded = json_decode($data, true);
+                    return isset($decoded['model'], $decoded['messages'], $decoded['response_format']) &&
+                        $decoded['model'] === 'gpt-3.5-turbo' &&
+                        $decoded['response_format']['type'] === 'json_schema' &&
+                        $decoded['response_format']['json_schema']['schema'] === $json_schema;
+                })
+            )
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $messages = [['role' => 'user', 'content' => 'Hello']];
+        $result = $provider->chat_completion($messages, false, $json_schema);
+
+        $this->assertEquals('{"name": "John", "age": 30}', $result->get_response());
+    }
+
+    public function test_chat_completion_json_mode_and_schema_precedence(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.openai.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'gpt-3.5-turbo',
+            'embedding_model' => 'text-embedding-ada-002'
+        ];
+
+        $json_schema = [
+            'type' => 'object',
+            'properties' => [
+                'name' => ['type' => 'string']
+            ]
+        ];
+
+        $expected_response = '{"choices":[{"message":{"content":"{\\"name\\": \\"John\\"}"}}], "usage":{"prompt_tokens": 5, "completion_tokens": 5}}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->with(
+                'https://api.openai.com/v1/chat/completions',
+                $this->callback(function ($data) use ($json_schema) {
+                    $decoded = json_decode($data, true);
+                    return isset($decoded['model'], $decoded['messages'], $decoded['response_format']) &&
+                        $decoded['model'] === 'gpt-3.5-turbo' &&
+                        $decoded['response_format']['type'] === 'json_schema' &&
+                        $decoded['response_format']['json_schema']['schema'] === $json_schema;
+                })
+            )
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $messages = [['role' => 'user', 'content' => 'Hello']];
+        $result = $provider->chat_completion($messages, true, $json_schema); // json_schema should take precedence
+
+        $this->assertEquals('{"name": "John"}', $result->get_response());
+    }
+
+    public function test_create_image_success_url(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.openai.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'gpt-3.5-turbo',
+            'embedding_model' => 'text-embedding-ada-002',
+            'image_model' => 'dall-e-3'
+        ];
+
+        $expected_response = '{"data":[{"url":"https://example.com/image.png"}]}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->with(
+                'https://api.openai.com/v1/images/generations',
+                $this->callback(function ($data) {
+                    $decoded = json_decode($data, true);
+                    return isset($decoded['model'], $decoded['prompt'], $decoded['response_format']) &&
+                        $decoded['model'] === 'dall-e-3' &&
+                        $decoded['prompt'] === 'A test image' &&
+                        $decoded['response_format'] === 'url';
+                })
+            )
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $result = $provider->create_image('A test image', false);
+
+        $this->assertEquals('https://example.com/image.png', $result->get_response());
+    }
+
+    public function test_create_image_success_b64(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.openai.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'gpt-3.5-turbo',
+            'embedding_model' => 'text-embedding-ada-002',
+            'image_model' => 'dall-e-3'
+        ];
+
+        $expected_response = '{"data":[{"b64_json":"base64encodedimage"}]}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->with(
+                'https://api.openai.com/v1/images/generations',
+                $this->callback(function ($data) {
+                    $decoded = json_decode($data, true);
+                    return isset($decoded['model'], $decoded['prompt'], $decoded['response_format']) &&
+                        $decoded['model'] === 'dall-e-3' &&
+                        $decoded['prompt'] === 'A test image' &&
+                        $decoded['response_format'] === 'b64_json';
+                })
+            )
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $result = $provider->create_image('A test image', true);
+
+        $this->assertEquals('base64encodedimage', $result->get_response());
+    }
+
+    public function test_create_image_missing_image_model(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.openai.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'gpt-3.5-turbo',
+            'embedding_model' => 'text-embedding-ada-002'
+        ];
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Image model is not configured');
+
+        $provider->create_image('A test image', false);
+    }
+
+    public function test_create_image_curl_error(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.openai.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'gpt-3.5-turbo',
+            'embedding_model' => 'text-embedding-ada-002',
+            'image_model' => 'dall-e-3'
+        ];
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->will($this->throwException(new \Exception('Connection failed')));
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Connection failed');
+
+        $provider->create_image('A test image', false);
+    }
+
+    public function test_create_image_invalid_response(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.openai.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'gpt-3.5-turbo',
+            'embedding_model' => 'text-embedding-ada-002',
+            'image_model' => 'dall-e-3'
+        ];
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->willReturn('invalid json');
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $this->expectException(invalid_provider_instance_response::class);
+
+        $provider->create_image('A test image', false);
+    }
+
     public function test_get_embedding_success(): void
     {
         $json_config = [
@@ -218,7 +484,7 @@ class openai_test extends \base_testcase
             'embedding_model' => 'text-embedding-ada-002'
         ];
 
-        $expected_response = '{"data":[{"embedding":[0.1, 0.2, 0.3]}]}';
+        $expected_response = '{"data":[{"embedding":[0.1, 0.2, 0.3]}],"usage":{"prompt_tokens":1,"total_tokens":1}}';
 
         $this->mock_curl->expects($this->once())
             ->method('post')
@@ -240,7 +506,7 @@ class openai_test extends \base_testcase
 
         $result = $provider->get_embedding('test input', null);
 
-        $this->assertEquals([0.1, 0.2, 0.3], $result);
+        $this->assertEquals([0.1, 0.2, 0.3], $result->get_response());
     }
 
     public function test_get_embedding_with_dimension(): void
@@ -252,7 +518,7 @@ class openai_test extends \base_testcase
             'embedding_model' => 'text-embedding-ada-002'
         ];
 
-        $expected_response = '{"data":[{"embedding":[0.1, 0.2, 0.3]}]}';
+        $expected_response = '{"data":[{"embedding":[0.1, 0.2, 0.3]}],"usage":{"prompt_tokens":1,"total_tokens":1}}';
 
         $this->mock_curl->expects($this->once())
             ->method('post')
@@ -276,7 +542,7 @@ class openai_test extends \base_testcase
 
         $result = $provider->get_embedding('test input', 512);
 
-        $this->assertEquals([0.1, 0.2, 0.3], $result);
+        $this->assertEquals([0.1, 0.2, 0.3], $result->get_response());
     }
 
     public function test_get_embedding_missing_embedding_model(): void
@@ -321,13 +587,134 @@ class openai_test extends \base_testcase
         $provider->get_embedding('test input', null);
     }
 
+    public function test_create_transcription_success(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.openai.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'gpt-3.5-turbo',
+            'embedding_model' => 'text-embedding-ada-002',
+            'image_model' => 'dall-e-3',
+            'transcription_model' => 'whisper-1'
+        ];
+
+        $expected_response = '{"text":"Hello, world!","segments":[{"start":0,"end":1,"text":"Hello"}],"usage":{"prompt_tokens":10,"completion_tokens":5}}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->with(
+                'https://api.openai.com/v1/audio/transcriptions',
+                $this->callback(function ($data) {
+                    return is_array($data) &&
+                        isset($data['model']) && $data['model'] === 'whisper-1' &&
+                        isset($data['file']) && $data['file'] instanceof \CURLFile &&
+                        isset($data['response_format']) && $data['response_format'] === 'verbose_json';
+                })
+            )
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        // Create a temporary audio file
+        $temp_file = tempnam(sys_get_temp_dir(), 'test_audio');
+        file_put_contents($temp_file, 'fake audio content');
+
+        $result = $provider->create_transcription($temp_file);
+
+        $this->assertEquals('Hello, world!', $result->get_response()->get_text());
+        $this->assertEquals([['start' => 0, 'end' => 1, 'text' => 'Hello']], $result->get_response()->get_segments());
+
+        unlink($temp_file);
+    }
+
+    public function test_create_transcription_missing_transcription_model(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.openai.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'gpt-3.5-turbo',
+            'embedding_model' => 'text-embedding-ada-002',
+            'image_model' => 'dall-e-3'
+        ];
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Transcription model is not configured');
+
+        $temp_file = tempnam(sys_get_temp_dir(), 'test_audio');
+        $provider->create_transcription($temp_file);
+        unlink($temp_file);
+    }
+
+    public function test_create_transcription_curl_error(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.openai.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'gpt-3.5-turbo',
+            'embedding_model' => 'text-embedding-ada-002',
+            'image_model' => 'dall-e-3',
+            'transcription_model' => 'whisper-1'
+        ];
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->will($this->throwException(new \Exception('Connection failed')));
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Connection failed');
+
+        $temp_file = tempnam(sys_get_temp_dir(), 'test_audio');
+        $provider->create_transcription($temp_file);
+        unlink($temp_file);
+    }
+
+    public function test_create_transcription_invalid_response(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.openai.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'gpt-3.5-turbo',
+            'embedding_model' => 'text-embedding-ada-002',
+            'image_model' => 'dall-e-3',
+            'transcription_model' => 'whisper-1'
+        ];
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->willReturn('invalid json');
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $this->expectException(invalid_provider_instance_response::class);
+
+        $temp_file = tempnam(sys_get_temp_dir(), 'test_audio');
+        $provider->create_transcription($temp_file);
+        unlink($temp_file);
+    }
+
     public function test_moodleform_definition(): void
     {
         $mform = $this->createMock(\MoodleQuickForm::class);
 
         // Expectations for all the element additions
-        $mform->expects($this->exactly(4))->method('addElement');
-        $mform->expects($this->exactly(4))->method('setType');
+        $mform->expects($this->exactly(6))->method('addElement');
+        $mform->expects($this->exactly(6))->method('setType');
         $mform->expects($this->exactly(2))->method('setDefault');
 
         $element_name_prefix = 'test_';
@@ -347,7 +734,9 @@ class openai_test extends \base_testcase
             'prefix_base_url' => 'https://api.openai.com',
             'prefix_api_key' => 'test_key',
             'prefix_chat_model' => 'gpt-3.5-turbo',
-            'prefix_embedding_model' => 'text-embedding-ada-002'
+            'prefix_embedding_model' => 'text-embedding-ada-002',
+            'prefix_image_model' => 'some-image-model',
+            'prefix_transcription_model' => 'whisper-1'
         ];
 
         $errors = \local_mxaimanager\app\ai\provider\providers\openai::moodleform_validation(
@@ -430,6 +819,45 @@ class openai_test extends \base_testcase
         $this->assertNotEmpty($errors['prefix_embedding_model']);
     }
 
+    public function test_moodleform_validation_missing_image_model(): void
+    {
+        $data = [
+            'prefix_base_url' => 'https://api.openai.com',
+            'prefix_api_key' => 'test_key',
+            'prefix_chat_model' => 'gpt-3.5-turbo',
+            'prefix_embedding_model' => 'text-embedding-ada-002'
+        ];
+
+        $errors = \local_mxaimanager\app\ai\provider\providers\openai::moodleform_validation(
+            $data,
+            'prefix_'
+        );
+
+        $this->assertArrayHasKey('prefix_image_model', $errors);
+        $this->assertIsString($errors['prefix_image_model']);
+        $this->assertNotEmpty($errors['prefix_image_model']);
+    }
+
+    public function test_moodleform_validation_missing_transcription_model(): void
+    {
+        $data = [
+            'prefix_base_url' => 'https://api.openai.com',
+            'prefix_api_key' => 'test_key',
+            'prefix_chat_model' => 'gpt-3.5-turbo',
+            'prefix_embedding_model' => 'text-embedding-ada-002',
+            'prefix_image_model' => 'some-image-model'
+        ];
+
+        $errors = \local_mxaimanager\app\ai\provider\providers\openai::moodleform_validation(
+            $data,
+            'prefix_'
+        );
+
+        $this->assertArrayHasKey('prefix_transcription_model', $errors);
+        $this->assertIsString($errors['prefix_transcription_model']);
+        $this->assertNotEmpty($errors['prefix_transcription_model']);
+    }
+
     public function test_action_moodleform_definition_chat_completion(): void
     {
         $mform = $this->createMock(\MoodleQuickForm::class);
@@ -461,6 +889,44 @@ class openai_test extends \base_testcase
         \local_mxaimanager\app\ai\provider\providers\openai::action_moodleform_definition(
             $mform,
             create_embedding::class,
+            $element_name_prefix
+        );
+
+        // The static method was called successfully if no exception was thrown
+        $this->assertTrue(true);
+    }
+
+    public function test_action_moodleform_definition_create_image(): void
+    {
+        $mform = $this->createMock(\MoodleQuickForm::class);
+
+        $mform->expects($this->once())->method('addElement');
+        $mform->expects($this->once())->method('setType');
+
+        $element_name_prefix = 'test_';
+
+        \local_mxaimanager\app\ai\provider\providers\openai::action_moodleform_definition(
+            $mform,
+            create_image::class,
+            $element_name_prefix
+        );
+
+        // The static method was called successfully if no exception was thrown
+        $this->assertTrue(true);
+    }
+
+    public function test_action_moodleform_definition_create_transcription(): void
+    {
+        $mform = $this->createMock(\MoodleQuickForm::class);
+
+        $mform->expects($this->once())->method('addElement');
+        $mform->expects($this->once())->method('setType');
+
+        $element_name_prefix = 'test_';
+
+        \local_mxaimanager\app\ai\provider\providers\openai::action_moodleform_definition(
+            $mform,
+            \local_mxaimanager\app\ai\provider\providers\interfaces\create_transcription::class,
             $element_name_prefix
         );
 

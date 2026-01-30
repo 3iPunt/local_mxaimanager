@@ -36,6 +36,14 @@ $string['ollama_embedding_model'] = 'Ollama Embedding Model';
 $string['ollama_embedding_model_help'] = 'Her kan du angive den embedding-model, der skal bruges. For eksempel: <strong>nomic-embed-text</strong>, osv. Se din Ollama\'s provider for tilgængelige embedding-modeller.';
 $string['nebius_embedding_model'] = 'Nebius Embedding Model';
 $string['nebius_embedding_model_help'] = 'Her kan du angive den embedding-model, der skal bruges. For eksempel: <strong>Qwen/Qwen3-Embedding-8B</strong>, osv. Se Nebius\'s dokumentation for tilgængelige embedding-modeller.';
+$string['openai_image_model'] = 'OpenAI Image Model';
+$string['openai_image_model_help'] = 'Her kan du angive den billedgenereringsmodel, der skal bruges. For eksempel: <strong>dall-e-3</strong>, <strong>dall-e-2</strong>, osv. Se OpenAI\'s dokumentation for tilgængelige billedgenereringsmodeller.';
+$string['nebius_image_model'] = 'Nebius Image Model';
+$string['nebius_image_model_help'] = 'Her kan du angive den billedgenereringsmodel, der skal bruges. For eksempel: <strong>black-forest-labs/flux-dev</strong>. Se Nebius\'s dokumentation for tilgængelige billedgenereringsmodeller.';
+$string['openai_transcription_model'] = 'OpenAI Transcription Model';
+$string['openai_transcription_model_help'] = 'Here you can specify the transcription model that should be used. For example: <strong>whisper-1</strong>. Refer to OpenAI\'s documentation for available transcription models.';
+$string['mistral_transcription_model'] = 'Mistral Transcription Model';
+$string['mistral_transcription_model_help'] = 'Here you can specify the transcription model that should be used. For example: <strong>mistral-whisper</strong>. Refer to Mistral\'s documentation for available transcription models.';
 
 // Manage Features
 $string['manage_features:title'] = 'AI Funktioner';
@@ -49,14 +57,20 @@ $string['manage_features:form:provider_id'] = 'Provider Instans';
 $string['here_you_can_see_all_components_ai_features'] = 'Her kan du se alle komponenters AI-funktioner, der er tilgængelige på dit site. Du kan overskrive standard provider-instansen og/eller indstillinger for hver funktion.';
 $string['uses_chat'] = 'Chat';
 $string['uses_embedding'] = 'Embeddings';
+$string['uses_image'] = 'Image';
+$string['uses_audio_transcriptions'] = 'Audio Transcriptions';
 
 $string['base_url'] = 'Base URL';
 $string['api_key'] = 'API Nøgle';
 $string['default_chat_model'] = 'Standard Chat Model';
 $string['default_embedding_model'] = 'Standard Embedding Model';
+$string['default_image_model'] = 'Standard Billedmodel';
+$string['default_transcription_model'] = 'Standard Transkriptionsmodel';
 $string['provider_settings'] = 'Provider Indstillinger';
 $string['supports_chat'] = 'Understøtter Chat';
 $string['supports_embedding'] = 'Understøtter Embedding';
+$string['supports_image'] = 'Understøtter Billede';
+$string['supports_audio_transcriptions'] = 'Understøtter Audio Transkriptioner';
 $string['provider_supports'] = 'Provider Kapaciteter';
 $string['default_action_providers'] = 'Standard Handling Provider-instanser';
 $string['here_you_define_default_action_providers'] = 'Her definerer du, hvilke provider-instanser der skal bruges som standard for hver handling.';
@@ -69,5 +83,17 @@ $string['this_provider_is_preconfigured_no_modify'] = 'Denne provider instans er
 // Settings
 $string['settings:manage_page'] = 'Administrer AI Indstillinger';
 
+// Capabilities
+$string['mxaimanager:manage_configuration'] = 'Manage Moxis AI Manager configuration';
+
 // Privacy
-$string['privacy:metadata'] = 'local_mxaimanager har ingen brugerdata';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs'] = 'Denne tabel gemmer logfiler over brugen af funktionshandlinger for Moxis AI Manager-pluginet.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:id'] = 'ID';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:feature_id'] = 'AI Funktions ID';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:request_json'] = 'Forespørgsels JSON sendt til AI provideren.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:response_json'] = 'Respons JSON modtaget fra AI provideren.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:input_tokens'] = 'Antallet af input tokens brugt i forespørgslen.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:output_tokens'] = 'Antallet af output tokens modtaget i responsen.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:session_id'] = 'Brugersessions ID forbundet med forespørgslen.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:user_id'] = 'Brugers ID, der foretog forespørgslen.';
+$string['privacy:metadata:local_mxaimanager_feature_action_usage_logs:timecreated'] = 'Tidsstempel for, hvornår logposten blev oprettet.';

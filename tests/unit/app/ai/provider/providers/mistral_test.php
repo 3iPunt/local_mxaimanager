@@ -33,7 +33,8 @@ class mistral_test extends \base_testcase
             'base_url' => 'https://api.mistral.ai',
             'api_key' => 'test_key',
             'chat_model' => 'mistral-tiny',
-            'embedding_model' => 'mistral-embed'
+            'embedding_model' => 'mistral-embed',
+            'transcription_model' => 'whisper-1'
         ];
 
         $provider = new \local_mxaimanager\app\ai\provider\providers\mistral(
@@ -116,7 +117,7 @@ class mistral_test extends \base_testcase
             'embedding_model' => 'mistral-embed'
         ];
 
-        $expected_response = '{"choices":[{"message":{"content":"Hello, world!"}}]}';
+        $expected_response = '{"choices":[{"message":{"content":"Hello, world!"}}], "usage":{"prompt_tokens": 5, "completion_tokens": 5}}';
 
         $this->mock_curl->expects($this->once())
             ->method('post')
@@ -137,7 +138,7 @@ class mistral_test extends \base_testcase
         $messages = [['role' => 'user', 'content' => 'Hello']];
         $result = $provider->chat_completion($messages);
 
-        $this->assertEquals('Hello, world!', $result);
+        $this->assertEquals('Hello, world!', $result->get_response());
     }
 
     public function test_chat_completion_missing_chat_model(): void
@@ -209,6 +210,128 @@ class mistral_test extends \base_testcase
         $provider->chat_completion($messages);
     }
 
+    public function test_chat_completion_with_json_mode(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.mistral.ai',
+            'api_key' => 'test_key',
+            'chat_model' => 'mistral-tiny',
+            'embedding_model' => 'mistral-embed'
+        ];
+
+        $expected_response = '{"choices":[{"message":{"content":"{\\"key\\": \\"value\\"}"}}], "usage":{"prompt_tokens": 5, "completion_tokens": 5}}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->with(
+                'https://api.mistral.ai/v1/chat/completions',
+                $this->callback(function ($data) {
+                    $decoded = json_decode($data, true);
+                    return isset($decoded['model'], $decoded['messages'], $decoded['response_format']) &&
+                        $decoded['model'] === 'mistral-tiny' &&
+                        $decoded['response_format']['type'] === 'json_object';
+                })
+            )
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\mistral(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $messages = [['role' => 'user', 'content' => 'Hello']];
+        $result = $provider->chat_completion($messages, true);
+
+        $this->assertEquals('{"key": "value"}', $result->get_response());
+    }
+
+    public function test_chat_completion_with_json_schema(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.mistral.ai',
+            'api_key' => 'test_key',
+            'chat_model' => 'mistral-tiny',
+            'embedding_model' => 'mistral-embed'
+        ];
+
+        $json_schema = [
+            'type' => 'object',
+            'properties' => [
+                'name' => ['type' => 'string'],
+                'age' => ['type' => 'integer']
+            ]
+        ];
+
+        $expected_response = '{"choices":[{"message":{"content":"{\\"name\\": \\"John\\", \\"age\\": 30}"}}], "usage":{"prompt_tokens": 5, "completion_tokens": 5}}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->with(
+                'https://api.mistral.ai/v1/chat/completions',
+                $this->callback(function ($data) use ($json_schema) {
+                    $decoded = json_decode($data, true);
+                    return isset($decoded['model'], $decoded['messages'], $decoded['response_format']) &&
+                        $decoded['model'] === 'mistral-tiny' &&
+                        $decoded['response_format']['type'] === 'json_schema' &&
+                        $decoded['response_format']['json_schema']['schema'] === $json_schema;
+                })
+            )
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\mistral(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $messages = [['role' => 'user', 'content' => 'Hello']];
+        $result = $provider->chat_completion($messages, false, $json_schema);
+
+        $this->assertEquals('{"name": "John", "age": 30}', $result->get_response());
+    }
+
+    public function test_chat_completion_json_mode_and_schema_precedence(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.mistral.ai',
+            'api_key' => 'test_key',
+            'chat_model' => 'mistral-tiny',
+            'embedding_model' => 'mistral-embed'
+        ];
+
+        $json_schema = [
+            'type' => 'object',
+            'properties' => [
+                'name' => ['type' => 'string']
+            ]
+        ];
+
+        $expected_response = '{"choices":[{"message":{"content":"{\\"name\\": \\"John\\"}"}}], "usage":{"prompt_tokens": 5, "completion_tokens": 5}}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->with(
+                'https://api.mistral.ai/v1/chat/completions',
+                $this->callback(function ($data) use ($json_schema) {
+                    $decoded = json_decode($data, true);
+                    return isset($decoded['model'], $decoded['messages'], $decoded['response_format']) &&
+                        $decoded['model'] === 'mistral-tiny' &&
+                        $decoded['response_format']['type'] === 'json_schema' &&
+                        $decoded['response_format']['json_schema']['schema'] === $json_schema;
+                })
+            )
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\mistral(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $messages = [['role' => 'user', 'content' => 'Hello']];
+        $result = $provider->chat_completion($messages, true, $json_schema); // json_schema should take precedence
+
+        $this->assertEquals('{"name": "John"}', $result->get_response());
+    }
+
     public function test_get_embedding_success(): void
     {
         $json_config = [
@@ -218,7 +341,7 @@ class mistral_test extends \base_testcase
             'embedding_model' => 'mistral-embed'
         ];
 
-        $expected_response = '{"data":[{"embedding":[0.1, 0.2, 0.3]}]}';
+        $expected_response = '{"data":[{"embedding":[0.1, 0.2, 0.3]}],"usage":{"prompt_tokens": 1,"total_tokens":1}}';
 
         $this->mock_curl->expects($this->once())
             ->method('post')
@@ -240,7 +363,7 @@ class mistral_test extends \base_testcase
 
         $result = $provider->get_embedding('test input', null);
 
-        $this->assertEquals([0.1, 0.2, 0.3], $result);
+        $this->assertEquals([0.1, 0.2, 0.3], $result->get_response());
     }
 
     public function test_get_embedding_with_dimension(): void
@@ -252,7 +375,7 @@ class mistral_test extends \base_testcase
             'embedding_model' => 'mistral-embed'
         ];
 
-        $expected_response = '{"data":[{"embedding":[0.1, 0.2, 0.3]}]}';
+        $expected_response = '{"data":[{"embedding":[0.1, 0.2, 0.3]}],"usage":{"prompt_tokens":1,"total_tokens":1}}';
 
         $this->mock_curl->expects($this->once())
             ->method('post')
@@ -276,7 +399,7 @@ class mistral_test extends \base_testcase
 
         $result = $provider->get_embedding('test input', 512);
 
-        $this->assertEquals([0.1, 0.2, 0.3], $result);
+        $this->assertEquals([0.1, 0.2, 0.3], $result->get_response());
     }
 
     public function test_get_embedding_missing_embedding_model(): void
@@ -321,13 +444,130 @@ class mistral_test extends \base_testcase
         $provider->get_embedding('test input', null);
     }
 
+    public function test_create_transcription_success(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.mistral.ai',
+            'api_key' => 'test_key',
+            'chat_model' => 'mistral-tiny',
+            'embedding_model' => 'mistral-embed',
+            'transcription_model' => 'whisper-1'
+        ];
+
+        $expected_response = '{"text":"Hello, world!","segments":[{"start":0,"end":1,"text":"Hello"}],"usage":{"prompt_tokens":10,"completion_tokens":5}}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->with(
+                'https://api.mistral.ai/v1/audio/transcriptions',
+                $this->callback(function ($data) {
+                    return is_array($data) &&
+                        isset($data['model']) && $data['model'] === 'whisper-1' &&
+                        isset($data['file']) && $data['file'] instanceof \CURLFile &&
+                        isset($data['response_format']) && $data['response_format'] === 'verbose_json';
+                })
+            )
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\mistral(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        // Create a temporary audio file
+        $temp_file = tempnam(sys_get_temp_dir(), 'test_audio');
+        file_put_contents($temp_file, 'fake audio content');
+
+        $result = $provider->create_transcription($temp_file);
+
+        $this->assertEquals('Hello, world!', $result->get_response()->get_text());
+        $this->assertEquals([['start' => 0, 'end' => 1, 'text' => 'Hello']], $result->get_response()->get_segments());
+
+        unlink($temp_file);
+    }
+
+    public function test_create_transcription_missing_transcription_model(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.mistral.ai',
+            'api_key' => 'test_key',
+            'chat_model' => 'mistral-tiny',
+            'embedding_model' => 'mistral-embed'
+        ];
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\mistral(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Transcription model is not configured');
+
+        $temp_file = tempnam(sys_get_temp_dir(), 'test_audio');
+        $provider->create_transcription($temp_file);
+        unlink($temp_file);
+    }
+
+    public function test_create_transcription_curl_error(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.mistral.ai',
+            'api_key' => 'test_key',
+            'chat_model' => 'mistral-tiny',
+            'embedding_model' => 'mistral-embed',
+            'transcription_model' => 'whisper-1'
+        ];
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->will($this->throwException(new \Exception('Connection failed')));
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\mistral(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Connection failed');
+
+        $temp_file = tempnam(sys_get_temp_dir(), 'test_audio');
+        $provider->create_transcription($temp_file);
+        unlink($temp_file);
+    }
+
+    public function test_create_transcription_invalid_response(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.mistral.ai',
+            'api_key' => 'test_key',
+            'chat_model' => 'mistral-tiny',
+            'embedding_model' => 'mistral-embed',
+            'transcription_model' => 'whisper-1'
+        ];
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->willReturn('invalid json');
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\mistral(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $this->expectException(invalid_provider_instance_response::class);
+
+        $temp_file = tempnam(sys_get_temp_dir(), 'test_audio');
+        $provider->create_transcription($temp_file);
+        unlink($temp_file);
+    }
+
     public function test_moodleform_definition(): void
     {
         $mform = $this->createMock(\MoodleQuickForm::class);
 
         // Expectations for all the element additions
-        $mform->expects($this->exactly(4))->method('addElement');
-        $mform->expects($this->exactly(4))->method('setType');
+        $mform->expects($this->exactly(5))->method('addElement');
+        $mform->expects($this->exactly(5))->method('setType');
         $mform->expects($this->exactly(2))->method('setDefault');
 
         $element_name_prefix = 'test_';
@@ -347,7 +587,8 @@ class mistral_test extends \base_testcase
             'prefix_base_url' => 'https://api.mistral.ai',
             'prefix_api_key' => 'test_key',
             'prefix_chat_model' => 'mistral-tiny',
-            'prefix_embedding_model' => 'mistral-embed'
+            'prefix_embedding_model' => 'mistral-embed',
+            'prefix_transcription_model' => 'whisper-1'
         ];
 
         $errors = \local_mxaimanager\app\ai\provider\providers\mistral::moodleform_validation(
@@ -430,6 +671,25 @@ class mistral_test extends \base_testcase
         $this->assertNotEmpty($errors['prefix_embedding_model']);
     }
 
+    public function test_moodleform_validation_missing_transcription_model(): void
+    {
+        $data = [
+            'prefix_base_url' => 'https://api.mistral.ai',
+            'prefix_api_key' => 'test_key',
+            'prefix_chat_model' => 'mistral-tiny',
+            'prefix_embedding_model' => 'mistral-embed'
+        ];
+
+        $errors = \local_mxaimanager\app\ai\provider\providers\mistral::moodleform_validation(
+            $data,
+            'prefix_'
+        );
+
+        $this->assertArrayHasKey('prefix_transcription_model', $errors);
+        $this->assertIsString($errors['prefix_transcription_model']);
+        $this->assertNotEmpty($errors['prefix_transcription_model']);
+    }
+
     public function test_action_moodleform_definition_chat_completion(): void
     {
         $mform = $this->createMock(\MoodleQuickForm::class);
@@ -461,6 +721,25 @@ class mistral_test extends \base_testcase
         \local_mxaimanager\app\ai\provider\providers\mistral::action_moodleform_definition(
             $mform,
             create_embedding::class,
+            $element_name_prefix
+        );
+
+        // The static method was called successfully if no exception was thrown
+        $this->assertTrue(true);
+    }
+
+    public function test_action_moodleform_definition_create_transcription(): void
+    {
+        $mform = $this->createMock(\MoodleQuickForm::class);
+
+        $mform->expects($this->once())->method('addElement');
+        $mform->expects($this->once())->method('setType');
+
+        $element_name_prefix = 'test_';
+
+        \local_mxaimanager\app\ai\provider\providers\mistral::action_moodleform_definition(
+            $mform,
+            \local_mxaimanager\app\ai\provider\providers\interfaces\create_transcription::class,
             $element_name_prefix
         );
 

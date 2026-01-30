@@ -114,6 +114,10 @@ None
 
 ## Change log
 
+* **1.0.4 (2026011200)**
+    - Added support for AI usage logging.
+    - Added support for AI image generation.
+    - Added support for AI audio transcription.
 * **1.0.3 (2026010800)**
     - Added support for JSON schema validation for AI provider responses.
 * **1.0.2 (2025120400)**

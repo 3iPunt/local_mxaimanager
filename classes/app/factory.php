@@ -53,9 +53,16 @@ class factory
         return $this->instances[__FUNCTION__] ??= new vector\factory($this);
     }
 
-    public function cfg(): object {
+    public function cfg(): object
+    {
         global $CFG;
         return $CFG;
+    }
+
+    public function user(): object
+    {
+        global $USER;
+        return $USER;
     }
 
     public function curl(): \curl
