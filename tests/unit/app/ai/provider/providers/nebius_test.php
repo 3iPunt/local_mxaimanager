@@ -115,7 +115,7 @@ class nebius_test extends \base_testcase
             'embedding_model' => 'text-embedding-qwen-002'
         ];
 
-        $expected_response = '{"choices":[{"message":{"content":"Hello, world!"}}], "usage":{"prompt_tokens": 5, "completion_tokens": 5}}';
+        $expected_response = '{"choices":[{"message":{"content":"Hello, world!"},"finish_reason":"stop"}], "usage":{"prompt_tokens": 5, "completion_tokens": 5}}';
 
         $this->mock_curl->expects($this->once())
             ->method('post')
@@ -137,6 +137,61 @@ class nebius_test extends \base_testcase
         $result = $provider->chat_completion($messages);
 
         $this->assertEquals('Hello, world!', $result->get_response());
+        $this->assertEquals('stop', $result->get_finish_reason());
+    }
+
+    public function test_chat_completion_finish_reason_length(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.tokenfactory.nebius.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'qwen-turbo',
+            'embedding_model' => 'text-embedding-qwen-002'
+        ];
+
+        $expected_response = '{"choices":[{"message":{"content":"{\\"partial\\":"},"finish_reason":"length"}], "usage":{"prompt_tokens": 5, "completion_tokens": 10}}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\nebius(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $messages = [['role' => 'user', 'content' => 'Hello']];
+        $result = $provider->chat_completion($messages);
+
+        $this->assertEquals('{"partial":', $result->get_response());
+        $this->assertEquals('length', $result->get_finish_reason());
+    }
+
+    public function test_chat_completion_finish_reason_defaults_to_stop(): void
+    {
+        $json_config = [
+            'base_url' => 'https://api.tokenfactory.nebius.com',
+            'api_key' => 'test_key',
+            'chat_model' => 'qwen-turbo',
+            'embedding_model' => 'text-embedding-qwen-002'
+        ];
+
+        // Response without finish_reason field
+        $expected_response = '{"choices":[{"message":{"content":"Hello"}}], "usage":{"prompt_tokens": 5, "completion_tokens": 5}}';
+
+        $this->mock_curl->expects($this->once())
+            ->method('post')
+            ->willReturn($expected_response);
+
+        $provider = new \local_mxaimanager\app\ai\provider\providers\nebius(
+            $this->mock_base_factory,
+            $json_config
+        );
+
+        $messages = [['role' => 'user', 'content' => 'Hello']];
+        $result = $provider->chat_completion($messages);
+
+        $this->assertEquals('stop', $result->get_finish_reason());
     }
 
     public function test_chat_completion_missing_chat_model(): void

@@ -22,6 +22,12 @@ class action_handler
 {
     private base_factory $base_factory;
 
+    /**
+     * Maximum number of continuation attempts when a chat completion response
+     * is truncated (finish_reason = 'length') during JSON mode requests.
+     */
+    public const MAX_CONTINUATION_ATTEMPTS = 10;
+
     public function __construct(base_factory $base_factory)
     {
         $this->base_factory = $base_factory;
@@ -82,6 +88,88 @@ class action_handler
         $chat_completion_request = $handler->chat_completion($messages, $json_mode, $json_schema);
 
         // Log the request and response.
+        $this->log_usage($feature, $chat_completion_request);
+
+        // If the response was truncated (finish_reason = 'length') and we are in JSON mode,
+        // continue fetching until we get a complete response or hit the max attempts.
+        $is_json_request = $json_mode || $json_schema !== null;
+        if ($is_json_request && $chat_completion_request->get_finish_reason() === 'length') {
+            $response = $this->continue_truncated_response(
+                $feature,
+                $handler,
+                $messages,
+                $json_mode,
+                $json_schema,
+                $chat_completion_request
+            );
+            return $this->strip_markdown_json_wrapper($response);
+        }
+
+        // Return the response, stripping any markdown code block wrapper for JSON requests.
+        $response = $chat_completion_request->get_response();
+        return $is_json_request ? $this->strip_markdown_json_wrapper($response) : $response;
+    }
+
+    /**
+     * Continue fetching a truncated chat completion response until the provider
+     * returns a non-'length' finish_reason or we hit the max continuation attempts.
+     *
+     * @param entity $feature
+     * @param chat_completion $handler
+     * @param message[] $messages The original messages array.
+     * @param bool $json_mode
+     * @param array|null $json_schema
+     * @param \local_mxaimanager\app\ai\provider\chat_completion_request $initial_request The first (truncated) response.
+     * @return string The concatenated full response content.
+     * @throws invalid_provider_instance_response
+     */
+    private function continue_truncated_response(
+        entity $feature,
+        chat_completion $handler,
+        array $messages,
+        bool $json_mode,
+        ?array $json_schema,
+        \local_mxaimanager\app\ai\provider\chat_completion_request $initial_request
+    ): string {
+        $accumulated_response = $initial_request->get_response();
+        $last_request = $initial_request;
+
+        for ($attempt = 0; $attempt < self::MAX_CONTINUATION_ATTEMPTS; $attempt++) {
+            // Append the partial assistant response to the conversation.
+            $messages[] = new message('assistant', $last_request->get_response());
+            $messages[] = new message(
+                'user',
+                'Continue exactly from where you left off. Output ONLY the remaining part of the JSON. Do not repeat any previous content, do not add explanations, and do not start a new JSON object.'
+            );
+
+            // Make the continuation request.
+            $last_request = $handler->chat_completion($messages, $json_mode, $json_schema);
+
+            // Log each continuation call individually for accurate token tracking.
+            $this->log_usage($feature, $last_request);
+
+            // Accumulate the response content.
+            $accumulated_response .= $last_request->get_response();
+
+            // If the response is no longer truncated, we're done.
+            if ($last_request->get_finish_reason() !== 'length') {
+                break;
+            }
+        }
+
+        return $accumulated_response;
+    }
+
+    /**
+     * Log a chat completion request/response to the usage logs.
+     *
+     * @param entity $feature
+     * @param \local_mxaimanager\app\ai\provider\chat_completion_request $chat_completion_request
+     */
+    private function log_usage(
+        entity $feature,
+        \local_mxaimanager\app\ai\provider\chat_completion_request $chat_completion_request
+    ): void {
         $this->base_factory->db()->insert_record('local_mxaimanager_feature_action_usage_logs', [
             'feature_id' => $feature->get_id(),
             'request_json' => json_encode($chat_completion_request->get_request_json(), JSON_THROW_ON_ERROR),
@@ -92,9 +180,26 @@ class action_handler
             'user_id' => $this->base_factory->user()->id,
             'timecreated' => time(),
         ]);
+    }
 
-        // Return the response.
-        return $chat_completion_request->get_response();
+    /**
+     * Strip markdown code block wrappers (```json ... ``` or ``` ... ```) from a response string.
+     *
+     * Some models wrap their JSON output in markdown code fences even when JSON mode is enabled.
+     * This method removes those wrappers so the consumer receives pure JSON.
+     *
+     * @param string $response The raw response string.
+     * @return string The response with markdown code block wrapper removed, if present.
+     */
+    private function strip_markdown_json_wrapper(string $response): string
+    {
+        $trimmed = trim($response);
+
+        if (preg_match('/^```(?:json)?\s*\n(.*)\n```$/s', $trimmed, $matches)) {
+            return trim($matches[1]);
+        }
+
+        return $response;
     }
 
     /**

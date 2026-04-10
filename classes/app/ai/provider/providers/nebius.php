@@ -168,7 +168,14 @@ class nebius extends provider implements interfaces\chat_completion, interfaces\
                 json_encode($payload, JSON_THROW_ON_ERROR)
             );
 
-            $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+            try {
+                $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+            } catch (\Throwable $t) {
+                throw new \Exception(
+                    'Failed to decode Nebius response as JSON. Nebius response: ' . $response,
+                    previous: $t
+                );
+            }
 
             if (!isset($json['choices'][0]['message']['content'])) {
                 throw new \Exception('Missing content in Nebius response. Nebius response: ' . $response);
@@ -179,7 +186,8 @@ class nebius extends provider implements interfaces\chat_completion, interfaces\
                 $json,
                 $json['choices'][0]['message']['content'],
                 $json['usage']['prompt_tokens'],
-                $json['usage']['completion_tokens']
+                $json['usage']['completion_tokens'],
+                $json['choices'][0]['finish_reason'] ?? 'stop'
             );
         } catch (\Throwable $t) {
             throw new invalid_provider_instance_response(
