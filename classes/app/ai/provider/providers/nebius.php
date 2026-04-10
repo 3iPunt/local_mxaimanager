@@ -10,20 +10,17 @@ defined('MOODLE_INTERNAL') || die();
 
 use local_mxaimanager\app\ai\provider\chat_completion_request;
 use local_mxaimanager\app\ai\provider\create_embedding_request;
-use local_mxaimanager\app\ai\provider\image_generation_request;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_configuration;
 use local_mxaimanager\app\exceptions\invalid_provider_instance_response;
 use local_mxaimanager\app\factory as base_factory;
 
-class nebius extends provider implements interfaces\chat_completion, interfaces\create_embedding,
-                                         interfaces\create_image
+class nebius extends provider implements interfaces\chat_completion, interfaces\create_embedding
 {
     private \curl $curl;
     private string $base_url;
     private string $api_key;
     private string $chat_model;
     private string $embedding_model;
-    private string $image_model;
 
     /**
      * @throws invalid_provider_instance_configuration
@@ -35,7 +32,6 @@ class nebius extends provider implements interfaces\chat_completion, interfaces\
         $this->api_key = $json_config['api_key'] ?? '';
         $this->chat_model = $json_config['chat_model'] ?? '';
         $this->embedding_model = $json_config['embedding_model'] ?? '';
-        $this->image_model = $json_config['image_model'] ?? '';
 
         if (empty($this->base_url) || empty($this->api_key)) {
             throw new invalid_provider_instance_configuration('Nebius is missing base url and/or api key');
@@ -76,20 +72,6 @@ class nebius extends provider implements interfaces\chat_completion, interfaces\
         $mform->addHelpButton("{$element_name_prefix}embedding_model", 'nebius_embedding_model', 'local_mxaimanager');
     }
 
-    private static function add_image_model_field(\MoodleQuickForm $mform, string $element_name_prefix): void
-    {
-        $mform->addElement(
-            'text',
-            "{$element_name_prefix}image_model",
-            get_string('default_image_model', 'local_mxaimanager'),
-            [
-                'action' => interfaces\create_image::class
-            ]
-        );
-        $mform->setType("{$element_name_prefix}image_model", PARAM_TEXT);
-        $mform->addHelpButton("{$element_name_prefix}image_model", 'nebius_image_model', 'local_mxaimanager');
-    }
-
     public static function moodleform_definition(\MoodleQuickForm $mform, string $element_name_prefix): void
     {
         // Add base_url field
@@ -107,9 +89,6 @@ class nebius extends provider implements interfaces\chat_completion, interfaces\
 
         // Add embedding model field
         self::add_embedding_model_field($mform, $element_name_prefix);
-
-        // Add image model field
-        self::add_image_model_field($mform, $element_name_prefix);
     }
 
     public static function moodleform_validation(array $data, string $element_name_prefix): array
@@ -132,10 +111,6 @@ class nebius extends provider implements interfaces\chat_completion, interfaces\
             $errors["{$element_name_prefix}embedding_model"] = get_string('required');
         }
 
-        if (empty($data["{$element_name_prefix}image_model"])) {
-            $errors["{$element_name_prefix}image_model"] = get_string('required');
-        }
-
         return $errors;
     }
 
@@ -150,9 +125,6 @@ class nebius extends provider implements interfaces\chat_completion, interfaces\
                 break;
             case interfaces\create_embedding::class:
                 self::add_embedding_model_field($mform, $element_name_prefix);
-                break;
-            case interfaces\create_image::class:
-                self::add_image_model_field($mform, $element_name_prefix);
                 break;
             default:
         }
@@ -196,7 +168,14 @@ class nebius extends provider implements interfaces\chat_completion, interfaces\
                 json_encode($payload, JSON_THROW_ON_ERROR)
             );
 
-            $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+            try {
+                $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
+            } catch (\Throwable $t) {
+                throw new \Exception(
+                    'Failed to decode Nebius response as JSON. Nebius response: ' . $response,
+                    previous: $t
+                );
+            }
 
             if (!isset($json['choices'][0]['message']['content'])) {
                 throw new \Exception('Missing content in Nebius response. Nebius response: ' . $response);
@@ -207,7 +186,8 @@ class nebius extends provider implements interfaces\chat_completion, interfaces\
                 $json,
                 $json['choices'][0]['message']['content'],
                 $json['usage']['prompt_tokens'],
-                $json['usage']['completion_tokens']
+                $json['usage']['completion_tokens'],
+                $json['choices'][0]['finish_reason'] ?? 'stop'
             );
         } catch (\Throwable $t) {
             throw new invalid_provider_instance_response(
@@ -251,52 +231,6 @@ class nebius extends provider implements interfaces\chat_completion, interfaces\
                 $json['data'][0]['embedding'],
                 $json['usage']['prompt_tokens'],
                 $json['usage']['total_tokens']
-            );
-        } catch (\Throwable $t) {
-            throw new invalid_provider_instance_response(
-                'Invalid response from Nebius: ' . $t->getMessage(),
-                previous: $t
-            );
-        }
-    }
-
-    /**
-     * @param string $prompt
-     * @param bool $return_b64
-     * @return image_generation_request
-     * @throws invalid_provider_instance_configuration
-     * @throws invalid_provider_instance_response
-     */
-    public function create_image(string $prompt, bool $return_b64 = false): image_generation_request
-    {
-        if (empty($this->image_model)) {
-            throw new invalid_provider_instance_configuration('Image model is not configured');
-        }
-
-        $payload = [
-            'model' => $this->image_model,
-            'prompt' => $prompt,
-            'response_format' => $return_b64 ? 'b64_json' : 'url',
-        ];
-
-        try {
-            $response = $this->curl->post(
-                "{$this->base_url}/v1/images/generations",
-                json_encode($payload, JSON_THROW_ON_ERROR)
-            );
-
-            $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
-
-            if (!isset($json['data'][0][$return_b64 ? 'b64_json' : 'url'])) {
-                throw new \Exception('Missing image data in Nebius response. Nebius response: ' . $response);
-            }
-
-            return new image_generation_request(
-                $payload,
-                $json,
-                $json['data'][0][$return_b64 ? 'b64_json' : 'url'],
-                0,
-                0
             );
         } catch (\Throwable $t) {
             throw new invalid_provider_instance_response(

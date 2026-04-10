@@ -114,6 +114,8 @@ None
 
 ## Change log
 
+* **1.0.5 (2026040700)**
+    - Removed support for text-to-image generation in nebius AI provider.
 * **1.0.4 (2026011200)**
     - Added support for AI usage logging.
     - Added support for AI image generation.
