@@ -28,6 +28,10 @@ $string['ollama_chat_model'] = 'Ollama Chat Model';
 $string['ollama_chat_model_help'] = 'Here you can specify the chat model that should be used. For example: <strong>llama2</strong>, <strong>vicuna</strong>, etc. Refer to your Ollama\'s provider for available models.';
 $string['nebius_chat_model'] = 'Nebius Chat Model';
 $string['nebius_chat_model_help'] = 'Here you can specify the chat model that should be used. For example: <strong>Qwen/Qwen3-32B-fast</strong>, <strong>Qwen/Qwen3-30B-A3B-Instruct-2507</strong>, etc. Refer to Nebius\'s documentation for available models.';
+$string['gemini_chat_model'] = 'Gemini Chat Model';
+$string['gemini_chat_model_help'] = 'Here you can specify the chat model that should be used. For example: <strong>gemini-pro</strong>, etc. Refer to Google AI Studio\'s documentation for available models.';
+$string['copilot_chat_model'] = 'Copilot Chat Model';
+$string['copilot_chat_model_help'] = 'Here you can specify the chat model (deployment name) that should be used. For example: <strong>gpt-35-turbo</strong>, etc. Refer to Azure OpenAI\'s documentation for available models.';
 $string['openai_embedding_model'] = 'OpenAI Embedding Model';
 $string['openai_embedding_model_help'] = 'Here you can specify the embedding model that should be used. For example: <strong>text-embedding-3-small</strong>, <strong>text-embedding-3-large</strong>, etc. Refer to OpenAI\'s documentation for available embedding models.';
 $string['mistral_embedding_model'] = 'Mistral Embedding Model';
@@ -36,14 +40,26 @@ $string['ollama_embedding_model'] = 'Ollama Embedding Model';
 $string['ollama_embedding_model_help'] = 'Here you can specify the embedding model that should be used. For example: <strong>nomic-embed-text</strong>, etc. Refer to your Ollama\'s provider for available embedding models.';
 $string['nebius_embedding_model'] = 'Nebius Embedding Model';
 $string['nebius_embedding_model_help'] = 'Here you can specify the embedding model that should be used. For example: <strong>Qwen/Qwen3-Embedding-8B</strong>, etc. Refer to Nebius\'s documentation for available embedding models.';
+$string['gemini_embedding_model'] = 'Gemini Embedding Model';
+$string['gemini_embedding_model_help'] = 'Here you can specify the embedding model that should be used. For example: <strong>text-embedding-004</strong>, etc. Refer to Google AI Studio\'s documentation for available models.';
+$string['copilot_embedding_model'] = 'Copilot Embedding Model';
+$string['copilot_embedding_model_help'] = 'Here you can specify the embedding model (deployment name) that should be used. For example: <strong>text-embedding-ada-002</strong>, etc. Refer to Azure OpenAI\'s documentation for available models.';
 $string['openai_image_model'] = 'OpenAI Image Model';
 $string['openai_image_model_help'] = 'Here you can specify the image generation model that should be used. For example: <strong>dall-e-3</strong>, <strong>dall-e-2</strong>, etc. Refer to OpenAI\'s documentation for available image generation models.';
 $string['nebius_image_model'] = 'Nebius Image Model';
 $string['nebius_image_model_help'] = 'Here you can specify the image generation model that should be used. For example: <strong>black-forest-labs/flux-dev</strong>. Refer to Nebius\'s documentation for available image generation models.';
+$string['gemini_image_model'] = 'Gemini Image Model';
+$string['gemini_image_model_help'] = 'Here you can specify the image generation model that should be used. For example: <strong>gemini-3.1-flash-image-preview</strong>, etc. Refer to Google AI Studio\'s documentation for available models.';
+$string['copilot_image_model'] = 'Copilot Image Model';
+$string['copilot_image_model_help'] = 'Here you can specify the image generation model (deployment name) that should be used. For example: <strong>dall-e-3</strong>, etc. Refer to Azure OpenAI\'s documentation for available models.';
 $string['openai_transcription_model'] = 'OpenAI Transcription Model';
 $string['openai_transcription_model_help'] = 'Here you can specify the transcription model that should be used. For example: <strong>whisper-1</strong>. Refer to OpenAI\'s documentation for available transcription models.';
 $string['mistral_transcription_model'] = 'Mistral Transcription Model';
 $string['mistral_transcription_model_help'] = 'Here you can specify the transcription model that should be used. For example: <strong>mistral-whisper</strong>. Refer to Mistral\'s documentation for available transcription models.';
+$string['gemini_transcription_model'] = 'Gemini Transcription Model';
+$string['gemini_transcription_model_help'] = 'Here you can specify the transcription model that should be used. For example: <strong>gemini-3-flash-preview</strong>, etc. Refer to Google AI Studio\'s documentation for available models.';
+$string['copilot_transcription_model'] = 'Copilot Transcription Model';
+$string['copilot_transcription_model_help'] = 'Here you can specify the transcription model (deployment name) that should be used. For example: <strong>whisper</strong>, etc. Refer to Azure OpenAI\'s documentation for available models.';
 
 // Manage Features
 $string['manage_features:title'] = 'AI Features';
@@ -62,6 +78,7 @@ $string['uses_audio_transcriptions'] = 'Audio Transcriptions';
 
 $string['base_url'] = 'Base URL';
 $string['api_key'] = 'API Key';
+$string['api_version'] = 'API Version';
 $string['default_chat_model'] = 'Default Chat Model';
 $string['default_embedding_model'] = 'Default Embedding Model';
 $string['default_image_model'] = 'Default Image Model';
@@ -79,6 +96,33 @@ $string['you_have_not_yet_configured_any_providers'] = 'You\'ve not yet configur
 $string['you_have_not_yet_configured_default_providers'] = 'You\'ve not yet configured default provider instances for all actions. Please configure default provider instances <a href="/local/mxaimanager/view.php?view=manage_providers&action=browse">here</a>.';
 $string['no_available_providers'] = 'No available provider instances';
 $string['this_provider_is_preconfigured_no_modify'] = 'This provider instance is preconfigured and cannot be modified.';
+
+// Gemini Error Messages
+$string['gemini_missing_api_key'] = 'Gemini is missing api key';
+$string['gemini_chat_model_not_configured'] = 'Chat model is not configured';
+$string['gemini_missing_chat_content'] = 'Missing content in Gemini response. Gemini response: {$a}';
+$string['gemini_invalid_response'] = 'Invalid response from Gemini: {$a}';
+$string['gemini_embedding_model_not_configured'] = 'Embedding model is not configured';
+$string['gemini_missing_embedding_data'] = 'Missing embedding data in Gemini response. Gemini response: {$a}';
+$string['gemini_image_model_not_configured'] = 'Image model is not configured';
+$string['gemini_image_b64_only'] = 'Gemini API only supports base64 image generation.';
+$string['gemini_missing_image_data'] = 'Missing image data in Gemini response. Gemini response: {$a}';
+$string['gemini_transcription_model_not_configured'] = 'Transcription model is not configured';
+$string['gemini_missing_transcription_data'] = 'Missing transcription data in Gemini response. Gemini response: {$a}';
+
+// Copilot Error Messages
+$string['copilot_missing_base_url_or_api_key'] = 'Copilot (Azure OpenAI) is missing base url and/or api key';
+$string['copilot_chat_model_not_configured'] = 'Chat model is not configured';
+$string['copilot_missing_chat_content'] = 'Missing content in Copilot (Azure OpenAI) response. Response: {$a}';
+$string['copilot_invalid_response'] = 'Invalid response from Copilot (Azure OpenAI): {$a}';
+$string['copilot_embedding_model_not_configured'] = 'Embedding model is not configured';
+$string['copilot_missing_embedding_data'] = 'Missing embedding data in Copilot (Azure OpenAI) response. Response: {$a}';
+$string['copilot_image_model_not_configured'] = 'Image model is not configured';
+$string['copilot_missing_image_data'] = 'Missing image data in Copilot (Azure OpenAI) response. Response: {$a}';
+$string['copilot_invalid_response_image_generation'] = 'Invalid response from Copilot (Azure OpenAI) image generation: {$a}';
+$string['copilot_transcription_model_not_configured'] = 'Transcription model is not configured';
+$string['copilot_missing_transcription_data'] = 'Missing text in Copilot (Azure OpenAI) transcription response. Response: {$a}';
+$string['copilot_invalid_response_transcription'] = 'Invalid response from Copilot (Azure OpenAI) transcription: {$a}';
 
 // Settings
 $string['settings:manage_page'] = 'Manage AI Settings';

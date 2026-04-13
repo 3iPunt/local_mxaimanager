@@ -37,6 +37,8 @@ class factory
             \local_mxaimanager\app\ai\provider\providers\mistral::class => 'Mistral',
             \local_mxaimanager\app\ai\provider\providers\ollama::class => 'Ollama',
             \local_mxaimanager\app\ai\provider\providers\nebius::class => 'Nebius',
+            \local_mxaimanager\app\ai\provider\providers\gemini::class => 'Gemini',
+            //\local_mxaimanager\app\ai\provider\providers\copilot::class => 'Copilot',
         ];
     }
 

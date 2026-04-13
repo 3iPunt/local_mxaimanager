@@ -62,6 +62,7 @@ $string['uses_audio_transcriptions'] = 'Audio Transcriptions';
 
 $string['base_url'] = 'Base URL';
 $string['api_key'] = 'API Nøgle';
+$string['api_version'] = 'API Version';
 $string['default_chat_model'] = 'Standard Chat Model';
 $string['default_embedding_model'] = 'Standard Embedding Model';
 $string['default_image_model'] = 'Standard Billedmodel';
@@ -79,6 +80,33 @@ $string['you_have_not_yet_configured_any_providers'] = 'Du har endnu ikke konfig
 $string['you_have_not_yet_configured_default_providers'] = 'Du har endnu ikke konfigureret standard provider-instanser for alle handlinger. Konfigurer venligst standard provider-instanser <a href="/local/mxaimanager/view.php?view=manage_providers&action=browse">her</a>.';
 $string['no_available_providers'] = 'Ingen tilgængelige provider-instanser';
 $string['this_provider_is_preconfigured_no_modify'] = 'Denne provider instans er forudkonfigureret og kan ikke ændres.';
+
+// Gemini Error Messages
+$string['gemini_missing_api_key'] = 'Gemini mangler api-nøgle';
+$string['gemini_chat_model_not_configured'] = 'Chatmodel er ikke konfigureret';
+$string['gemini_missing_chat_content'] = 'Manglende indhold i Gemini-svar. Gemini-svar: {$a}';
+$string['gemini_invalid_response'] = 'Ugyldigt svar fra Gemini: {$a}';
+$string['gemini_embedding_model_not_configured'] = 'Embedding-model er ikke konfigureret';
+$string['gemini_missing_embedding_data'] = 'Manglende embedding-data i Gemini-svar. Gemini-svar: {$a}';
+$string['gemini_image_model_not_configured'] = 'Billedmodel er ikke konfigureret';
+$string['gemini_image_b64_only'] = 'Gemini API understøtter kun base64-billedgenerering.';
+$string['gemini_missing_image_data'] = 'Manglende billeddata i Gemini-svar. Gemini-svar: {$a}';
+$string['gemini_transcription_model_not_configured'] = 'Transskriptionsmodel er ikke konfigureret';
+$string['gemini_missing_transcription_data'] = 'Manglende transskriptionsdata i Gemini-svar. Gemini-svar: {$a}';
+
+// Copilot Error Messages
+$string['copilot_missing_base_url_or_api_key'] = 'Copilot (Azure OpenAI) mangler basis-url og/eller api-nøgle';
+$string['copilot_chat_model_not_configured'] = 'Chatmodel er ikke konfigureret';
+$string['copilot_missing_chat_content'] = 'Manglende indhold i Copilot (Azure OpenAI) svar. Svar: {$a}';
+$string['copilot_invalid_response'] = 'Ugyldigt svar fra Copilot (Azure OpenAI): {$a}';
+$string['copilot_embedding_model_not_configured'] = 'Embedding-model er ikke konfigureret';
+$string['copilot_missing_embedding_data'] = 'Manglende embedding-data i Copilot (Azure OpenAI) svar. Svar: {$a}';
+$string['copilot_image_model_not_configured'] = 'Billedmodel er ikke konfigureret';
+$string['copilot_missing_image_data'] = 'Manglende billeddata i Copilot (Azure OpenAI) svar. Svar: {$a}';
+$string['copilot_invalid_response_image_generation'] = 'Ugyldigt svar fra Copilot (Azure OpenAI) billedgenerering: {$a}';
+$string['copilot_transcription_model_not_configured'] = 'Transskriptionsmodel er ikke konfigureret';
+$string['copilot_missing_transcription_data'] = 'Manglende tekst i Copilot (Azure OpenAI) transskriptionssvar. Svar: {$a}';
+$string['copilot_invalid_response_transcription'] = 'Ugyldigt svar fra Copilot (Azure OpenAI) transskription: {$a}';
 
 // Settings
 $string['settings:manage_page'] = 'Administrer AI Indstillinger';
