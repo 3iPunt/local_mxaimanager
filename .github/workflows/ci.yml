@@ -11,11 +11,22 @@ jobs:
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-        php: [8.3, 8.4]
+        php: [8.2, 8.3, 8.4]
         os: [ubuntu-latest]
         moodle: [MOODLE_500_STABLE,MOODLE_502_STABLE]
         dbtype: [mysqli, sqlsrv]
-        experimental: [true]
+        experimental: [false]
+        exclude:
+          - php: 8.2
+            os: ubuntu-latest
+            moodle: MOODLE_502_STABLE
+            dbtype: sqlsrv
+            experimental: false
+          - php: 8.2
+            os: ubuntu-latest
+            moodle: MOODLE_502_STABLE
+            dbtype: sqlsrv
+            experimental: false
     steps:
       - name: Unit testing & integration testing
         uses: praxisdigital/moodle-test-action@master
