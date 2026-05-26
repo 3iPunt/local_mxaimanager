@@ -25,7 +25,7 @@ jobs:
           - php: 8.2
             os: ubuntu-latest
             moodle: MOODLE_502_STABLE
-            dbtype: sqlsrv
+            dbtype: mysqli
             experimental: false
     steps:
       - name: Unit testing & integration testing
