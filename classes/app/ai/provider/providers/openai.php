@@ -308,9 +308,10 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
         $payload = [
             'model' => $this->image_model,
             'prompt' => $prompt,
-            'response_format' => $return_b64 ? 'b64_json' : 'url',
         ];
-
+        if (!$return_b64) {
+            throw new \Exception('Openai new API only accepts b64_json');
+        }
         try {
             $response = $this->curl->post(
                 "{$this->base_url}/v1/images/generations",
@@ -319,14 +320,14 @@ class openai extends provider implements interfaces\chat_completion, interfaces\
 
             $json = json_decode($response, true, 512, JSON_THROW_ON_ERROR);
 
-            if (!isset($json['data'][0][$return_b64 ? 'b64_json' : 'url'])) {
+            if (!isset($json['data'][0]['b64_json'])) {
                 throw new \Exception('Missing image data in OpenAI response. OpenAI response: ' . $response);
             }
 
             return new image_generation_request(
                 $payload,
                 $json,
-                $json['data'][0][$return_b64 ? 'b64_json' : 'url'],
+                $json['data'][0]['b64_json'],
                 0,
                 0
             );
