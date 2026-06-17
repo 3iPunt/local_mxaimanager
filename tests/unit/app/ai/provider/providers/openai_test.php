@@ -389,7 +389,7 @@ class openai_test extends \base_testcase
         $this->assertEquals('{"name": "John"}', $result->get_response());
     }
 
-    public function test_create_image_success_url(): void
+    public function test_create_image_url_not_supported(): void
     {
         $json_config = [
             'base_url' => 'https://api.openai.com',
@@ -399,30 +399,20 @@ class openai_test extends \base_testcase
             'image_model' => 'dall-e-3'
         ];
 
-        $expected_response = '{"data":[{"url":"https://example.com/image.png"}]}';
-
-        $this->mock_curl->expects($this->once())
-            ->method('post')
-            ->with(
-                'https://api.openai.com/v1/images/generations',
-                $this->callback(function ($data) {
-                    $decoded = json_decode($data, true);
-                    return isset($decoded['model'], $decoded['prompt'], $decoded['response_format']) &&
-                        $decoded['model'] === 'dall-e-3' &&
-                        $decoded['prompt'] === 'A test image' &&
-                        $decoded['response_format'] === 'url';
-                })
-            )
-            ->willReturn($expected_response);
+        // The new OpenAI image API only returns base64, so requesting a URL (return_b64 = false)
+        // is no longer supported and must fail before any request is made.
+        $this->mock_curl->expects($this->never())
+            ->method('post');
 
         $provider = new \local_mxaimanager\app\ai\provider\providers\openai(
             $this->mock_base_factory,
             $json_config
         );
 
-        $result = $provider->create_image('A test image', false);
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Openai new API only accepts b64_json');
 
-        $this->assertEquals('https://example.com/image.png', $result->get_response());
+        $provider->create_image('A test image', false);
     }
 
     public function test_create_image_success_b64(): void
@@ -432,21 +422,23 @@ class openai_test extends \base_testcase
             'api_key' => 'test_key',
             'chat_model' => 'gpt-3.5-turbo',
             'embedding_model' => 'text-embedding-ada-002',
-            'image_model' => 'dall-e-3'
+            'image_model' => 'gpt-image-1',
         ];
 
         $expected_response = '{"data":[{"b64_json":"base64encodedimage"}]}';
 
+        // The OpenAI /v1/images/generations endpoint no longer accepts response_format, so the
+        // provider must send only model and prompt and always read b64_json from the response.
         $this->mock_curl->expects($this->once())
             ->method('post')
             ->with(
                 'https://api.openai.com/v1/images/generations',
                 $this->callback(function ($data) {
                     $decoded = json_decode($data, true);
-                    return isset($decoded['model'], $decoded['prompt'], $decoded['response_format']) &&
-                        $decoded['model'] === 'dall-e-3' &&
-                        $decoded['prompt'] === 'A test image' &&
-                        $decoded['response_format'] === 'b64_json';
+                    return isset($decoded['model'], $decoded['prompt']) &&
+                        !isset($decoded['response_format']) &&
+                        $decoded['model'] === 'gpt-image-1' &&
+                        $decoded['prompt'] === 'A test image';
                 })
             )
             ->willReturn($expected_response);
@@ -503,7 +495,7 @@ class openai_test extends \base_testcase
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Connection failed');
 
-        $provider->create_image('A test image', false);
+        $provider->create_image('A test image', true);
     }
 
     public function test_create_image_invalid_response(): void
@@ -527,7 +519,7 @@ class openai_test extends \base_testcase
 
         $this->expectException(invalid_provider_instance_response::class);
 
-        $provider->create_image('A test image', false);
+        $provider->create_image('A test image', true);
     }
 
     public function test_get_embedding_success(): void
